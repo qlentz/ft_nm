@@ -29,6 +29,12 @@ void ft_nm(char *filename) {
 	t_file file;
 
 	file.mem = NULL;
+	file.fd = -1;
+
+	if (!open_file(filename, &file)) {
+		//handle
+	}
+
 
 	
 }
