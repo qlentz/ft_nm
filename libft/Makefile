@@ -25,11 +25,11 @@ all: 		$(NAME)
 $(NAME):	$(OBJS)
 			ar rcs $(NAME) $(OBJS)
 
-clean:		
+clean:
 			$(RM) $(OBJS) $(BONUS_OBJS)
 
 fclean:		clean
-			$(RM) $(NAME)
+	        $(RM) $(NAME)
 
 re:		fclean $(NAME)
 

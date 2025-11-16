@@ -30,7 +30,7 @@ clean:
 
 
 fclean:		clean
-			@make -C $(LIBFT) clean
+			@make -C $(LIBFT) fclean
 			$(RM) $(NAME)
 
 re:			fclean $(NAME)
