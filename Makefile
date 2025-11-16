@@ -1,6 +1,6 @@
 NAME 	= ft_nm
 
-SRCS	= src/main.c
+SRCS	= src/main.c src/elf_ident.c src/safety_utils.c src/readers.c
 
 OBJS	= $(SRCS:.c=.o)
 
@@ -8,7 +8,7 @@ LIBFT	= ./libft
 
 CC		= gcc
 
-CFLAGS	= -Wall -Wextra -Werror -I.
+CFLAGS	= -Wall -Wextra -Werror -I. -I ./libft
 
 RM		= rm -f
 
@@ -23,7 +23,7 @@ $(NAME):	$(OBJS)
 lib:
 			@make -sC $(LIBFT)
 
-clean:		
+clean:
 			$(RM) $(OBJS)
 			@make -C $(LIBFT) clean
 

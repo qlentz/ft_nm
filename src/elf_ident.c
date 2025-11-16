@@ -5,7 +5,7 @@ int check_elf_magic(const unsigned char *mem)
     static const unsigned char elf_magic[4] = { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 };
 
     if (ft_memcmp(mem, elf_magic, 4) != 0) {
-        ft_printf("ft_nm: file is not an ELF file.");
+        ft_printf("ft_nm: file is not an ELF file.\n");
         return 0;
     }
     return 1;

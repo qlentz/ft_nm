@@ -8,17 +8,15 @@ const void *offptr(const t_file *f, size_t off, size_t len) {
     return (const unsigned char*)f->mem + off;
 }
 
-// Checked multiplication: returns 1 if overflow, 0 if OK
-static int checked_mul_size_t(size_t a, size_t b, size_t *out) {
-    if (out == NULL) return 1;
-
+int mul_overflows_size_t(size_t a, size_t b, size_t *out) {
+    if (!out)
+        return 1;
     if (a == 0 || b == 0) {
         *out = 0;
         return 0;
     }
-    if (a > SIZE_MAX / b) {
-        return 1; // overflow detected
-    }
+    if (a > SIZE_MAX / b)
+        return 1;
     *out = a * b;
     return 0;
 }
