@@ -147,78 +147,11 @@ static void	save_symbol(t_symbol *dst, size_t *index,
 	(*index)++;
 }
 
-static int	compare_names_insensitive(const char *a, const char *b)
-{
-	unsigned char	ca;
-	unsigned char	cb;
-
-	while (*a && *b)
-	{
-		ca = (unsigned char)ft_tolower((unsigned char)*a);
-		cb = (unsigned char)ft_tolower((unsigned char)*b);
-		if (ca != cb)
-			return (ca - cb);
-		a++;
-		b++;
-	}
-	if (*a == *b)
-		return (0);
-	return (*a ? 1 : -1);
-}
-
-static const char	*skip_underscores(const char *name)
-{
-	while (*name == '_')
-		name++;
-	return (name);
-}
-
-static int	char_rank(char c)
-{
-	if (c == '\0')
-		return (0);
-	if (c == '_')
-		return (-2);
-	if (c == '@')
-		return (1);
-	return ((int)ft_tolower((unsigned char)c) + 2);
-}
-
-static int	compare_trimmed_names(const char *a, const char *b)
-{
-	const char		*sa;
-	const char		*sb;
-
-	sa = skip_underscores(a);
-	sb = skip_underscores(b);
-	while (*sa || *sb)
-	{
-		int	ra;
-		int	rb;
-
-		ra = char_rank(*sa);
-		rb = char_rank(*sb);
-		if (ra != rb)
-			return (ra - rb);
-		if (*sa)
-			sa++;
-		if (*sb)
-			sb++;
-		if (!*sa && !*sb)
-			break ;
-	}
-	return (0);
-}
-
 static int	compare_symbols(const t_symbol *a, const t_symbol *b)
 {
 	int	cmp;
 
-	cmp = compare_trimmed_names(a->name, b->name);
-	if (cmp == 0)
-		cmp = compare_names_insensitive(a->name, b->name);
-	if (cmp == 0)
-		cmp = ft_strcmp(a->name, b->name);
+	cmp = ft_strcmp(a->name, b->name);
 	if (cmp != 0)
 		return (cmp);
 	if (a->value < b->value)
