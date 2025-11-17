@@ -193,6 +193,16 @@ typedef struct s_nmctx {
     t_symtab_slice dynsym;
 }   t_nmctx;
 
+typedef struct s_symbol_view
+{
+	uint32_t		name;
+	uint64_t		value;
+	uint64_t		size;
+	unsigned char	info;
+	unsigned char	other;
+	uint16_t		shndx;
+}	t_symbol_view;
+
 //peu d'impact car toujours little endian sur x86 pour ce projet
 uint16_t r_u16(const void *p, int is_le);
 uint32_t r_u32(const void *p, int is_le);
@@ -218,4 +228,5 @@ int populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta, t_symtab_sli
 int render_symbols(t_nmctx *ctx, const char *filename);
 int process_elf(t_file *file, const char *filename);
 
+void	print_symbols(const t_nmctx *ctx, t_symbol *symbols, size_t count);
 #endif

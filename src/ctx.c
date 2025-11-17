@@ -160,8 +160,8 @@ static int	process_section(t_nmctx *ctx, size_t index)
 		return (1);
 	if (meta.type == SHT_SYMTAB)
 		return (store_slice(ctx, &meta, &ctx->symtab));
-	if (meta.type == SHT_DYNSYM)
-		return (store_slice(ctx, &meta, &ctx->dynsym));
+	//if (meta.type == SHT_DYNSYM)
+	//	return (store_slice(ctx, &meta, &ctx->dynsym));
 	return (0);
 }
 

@@ -1,15 +1,7 @@
 #include <stdlib.h>
 #include "ft_nm.h"
+#include "libft.h"
 
-typedef struct s_symbol_view
-{
-	uint32_t		name;
-	uint64_t		value;
-	uint64_t		size;
-	unsigned char	info;
-	unsigned char	other;
-	uint16_t		shndx;
-}	t_symbol_view;
 
 static t_symtab_slice	*active_symtab(t_nmctx *ctx)
 {
@@ -279,71 +271,6 @@ static int	collect_symbols(t_nmctx *ctx, const t_symtab_slice *slice,
 	return (0);
 }
 
-static void	print_padding(int width)
-{
-	while (width-- > 0)
-		ft_putchar_fd(' ', STDOUT_FILENO);
-}
-
-static int	hex_digit_count(uint64_t value)
-{
-	int	count;
-
-	count = 1;
-	while (value >= 16)
-	{
-		value /= 16;
-		count++;
-	}
-	return (count);
-}
-
-static void	print_hex_value(uint64_t value, int width)
-{
-	int	digits;
-
-	digits = hex_digit_count(value);
-	if (digits < width)
-	{
-		while (digits < width)
-		{
-			ft_putchar_fd('0', STDOUT_FILENO);
-			digits++;
-		}
-	}
-	ft_printhex((unsigned long)value);
-}
-
-static void	print_symbol_row(const t_nmctx *ctx, const t_symbol *sym)
-{
-	int	width;
-	int	is_undef;
-
-	width = ctx->meta.is_64 ? 16 : 8;
-	is_undef = (sym->type_char == 'U' || sym->type_char == 'u'
-			|| sym->type_char == 'w' || sym->type_char == 'v');
-	if (is_undef)
-		print_padding(width);
-	else
-		print_hex_value(sym->value, width);
-	ft_putchar_fd(' ', STDOUT_FILENO);
-	ft_putchar_fd(sym->type_char, STDOUT_FILENO);
-	ft_putchar_fd(' ', STDOUT_FILENO);
-	ft_putendl_fd(sym->name, STDOUT_FILENO);
-}
-
-static void	print_symbols(const t_nmctx *ctx, t_symbol *symbols, size_t count)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < count)
-	{
-		print_symbol_row(ctx, &symbols[i]);
-		++i;
-	}
-}
-
 int	render_symbols(t_nmctx *ctx, const char *filename)
 {
 	t_symtab_slice	*slice;
@@ -353,7 +280,8 @@ int	render_symbols(t_nmctx *ctx, const char *filename)
 	slice = active_symtab(ctx);
 	if (!slice)
 	{
-		ft_putstr_fd(filename, STDOUT_FILENO);
+		//ft_putstr_fd(filename, STDOUT_FILENO);
+		ft_printf("ft_nm: %s", filename);
 		ft_putendl_fd(": no symbols", STDOUT_FILENO);
 		return (0);
 	}
