@@ -19,7 +19,7 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
 
 ## P0 — Blocking (each of these can fail the defense)
 
-- [ ] **1. Out-of-bounds read / segfault on a crafted `e_shentsize` or `sh_entsize`.** The code checks entries against the declared entry size, then reads a full `Elf64_Shdr` (64 bytes) or `Elf64_Sym` (24 bytes) anyway.
+- [x] **1. Out-of-bounds read / segfault on a crafted `e_shentsize` or `sh_entsize`.** The code checks entries against the declared entry size, then reads a full `Elf64_Shdr` (64 bytes) or `Elf64_Sym` (24 bytes) anyway.
   - Test: a page-aligned `.o` with `e_shentsize = 1` and the section table in its last bytes. valgrind reports `Invalid read … r_u64 ← fill_meta64 ← read_section_meta` and the program dies with **SIGSEGV (exit 139)**.
   - Same result for a symtab with `sh_entsize = 1` (`fill_symbol64 ← read_symbol_view`).
   - It only runs clean outside valgrind because the next page happens to be mapped. The subject forbids this: *"In no way can your program quit in an unexpected manner"*.
@@ -32,7 +32,7 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
   - Fix: `setlocale(LC_ALL, "")` in `main` and `strcoll(a->name, b->name)` as the **only** comparison. Both are in the C standard library, which the subject allows.
   - On equal names, keep symbol-table order with a stable sort. Do not compare by value or type: matching libc depends on this.
 
-- [ ] **3. Missing type `i` (GNU IFUNC, `STT_GNU_IFUNC` = 10).** ft_nm prints `T`/`t` instead, which accounts for 141 wrong lines in `/usr/lib64/libc.so.6` and also shows up in the IFUNC test objects.
+- [x] **3. Missing type `i` (GNU IFUNC, `STT_GNU_IFUNC` = 10).** ft_nm prints `T`/`t` instead, which accounts for 141 wrong lines in `/usr/lib64/libc.so.6` and also shows up in the IFUNC test objects.
   - Fix: in `classify_symbol` ([src/symbols.c:101](src/symbols.c:101)), return `'i'` for a defined IFUNC symbol. Do it before the weak/unique checks and do not lowercase it, matching `bfd_decode_symclass`.
 
 - [ ] **4. Address is blank for `u` (GNU unique) symbols.** `u` symbols are *defined* (for example C++ inline static locals, `_ZZ7countervE1c`), and `nm` prints their address.

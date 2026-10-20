@@ -87,6 +87,7 @@ enum { EI_MAG0=0, EI_MAG1, EI_MAG2, EI_MAG3, EI_CLASS=4, EI_DATA=5, EI_NIDENT=16
 #define STT_FILE 4
 #define STT_COMMON 5
 #define STT_TLS 6
+#define STT_GNU_IFUNC 10
 
 #define ELF_ST_BIND(i) ((i) >> 4)
 #define ELF_ST_TYPE(i) ((i) & 0xf)

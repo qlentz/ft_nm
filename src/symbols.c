@@ -106,6 +106,8 @@ static char	classify_symbol(const t_nmctx *ctx, const t_symbol_view *sym)
 
 	bind = ELF_ST_BIND(sym->info);
 	type = ELF_ST_TYPE(sym->info);
+	if (type == STT_GNU_IFUNC && sym->shndx != SHN_UNDEF)
+		return ('i');
 	c = handle_bindings(sym, bind, type);
 	if (c)
 		return (lower_if_local(c, sym->info));
