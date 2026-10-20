@@ -11,9 +11,11 @@ SRCS		= ft_isalpha.c ft_memcmp.c ft_putendl_fd.c ft_striteri.c ft_strncmp.c ft_t
 
 OBJS	= $(SRCS:.c=.o)
 
+DEPS	= $(OBJS:.o=.d)
+
 CC		= gcc
 
-CFLAGS	= -Wall -Wextra -Werror -I.
+CFLAGS	= -Wall -Wextra -Werror -MMD -MP -I.
 
 RM		= rm -f
 
@@ -26,11 +28,13 @@ $(NAME):	$(OBJS)
 			ar rcs $(NAME) $(OBJS)
 
 clean:
-			$(RM) $(OBJS) $(BONUS_OBJS)
+			$(RM) $(OBJS) $(DEPS)
 
 fclean:		clean
-	        $(RM) $(NAME)
+			$(RM) $(NAME)
 
-re:		fclean $(NAME)
+re:			fclean all
+
+-include $(DEPS)
 
 .PHONY: all clean fclean re

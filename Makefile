@@ -6,34 +6,41 @@ SRCS	= src/main.c src/elf_ident.c src/safety_utils.c src/readers.c \
 
 OBJS	= $(SRCS:.c=.o)
 
-LIBFT	= ./libft
+DEPS	= $(OBJS:.o=.d)
+
+LIBFT_DIR	= ./libft
+
+LIBFT	= $(LIBFT_DIR)/libft.a
 
 CC		= gcc
 
-CFLAGS	= -Wall -Wextra -Werror -I. -I ./libft
+CFLAGS	= -Wall -Wextra -Werror -MMD -MP -I. -I $(LIBFT_DIR)
 
 RM		= rm -f
 
 .c.o:
 			${CC} ${CFLAGS} -c $< -o ${<:.c=.o}
 
-all:		lib $(NAME)
+all:		$(NAME)
 
-$(NAME):	$(OBJS)
-			$(CC) $(CFLAGS) -L $(LIBFT) -o $@ $^ -lft
+$(NAME):	$(OBJS) $(LIBFT)
+			$(CC) $(CFLAGS) -o $@ $(OBJS) -L $(LIBFT_DIR) -lft
 
-lib:
-			@make -sC $(LIBFT)
+$(LIBFT):	FORCE
+			@$(MAKE) -sC $(LIBFT_DIR)
 
 clean:
-			$(RM) $(OBJS)
-			@make -C $(LIBFT) clean
-
+			$(RM) $(OBJS) $(DEPS)
+			@$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean:		clean
-			@make -C $(LIBFT) fclean
+			@$(MAKE) -C $(LIBFT_DIR) fclean
 			$(RM) $(NAME)
 
-re:			fclean $(NAME)
+re:			fclean all
 
-.PHONY: all clean fclean re
+FORCE:
+
+-include $(DEPS)
+
+.PHONY: all clean fclean re FORCE

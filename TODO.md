@@ -68,7 +68,7 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
   - Printing libc makes **295,815 `write` syscalls** for 8,122 lines.
   - Fix together with P0-2: use a stable merge sort, or `qsort` that breaks ties on the original index. Buffer the output, for example a 4 KiB buffer flushed when full and at the end of each file.
 
-- [ ] **8. Makefile.**
+- [x] **8. Makefile.**
   - `make re` fails with `cannot find -lft`: `re: fclean $(NAME)` deletes `libft.a` and never rebuilds it ([Makefile:36](Makefile:36)). Use `re: fclean all`.
   - `$(NAME)` should depend on `libft/libft.a` ([Makefile:21](Makefile:21)).
   - Editing `ft_nm.h` triggers no rebuild. Add the header as a prerequisite, or use `-MMD -MP` and `-include $(DEPS)`.
