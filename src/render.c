@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 22:43:00 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 23:04:31 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,11 @@ int	render_symbols(t_nmctx *ctx, int show_name)
 	}
 	if (collect_symbols(ctx, &symbols, &count) != 0)
 		return (nm_error(ctx->file->path, strerror(ENOMEM)));
-	sort_symbols(symbols, count);
+	if (sort_symbols(symbols, count) != 0)
+	{
+		free(symbols);
+		return (nm_error(ctx->file->path, strerror(ENOMEM)));
+	}
 	print_symbols(ctx, symbols, count);
 	free(symbols);
 	return (0);

@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/29 14:22:50 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 22:45:51 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 23:04:31 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,7 +329,7 @@ const char		*symbol_name(const t_nmctx *ctx, uint32_t offset);
 char			classify_symbol(const t_nmctx *ctx, const t_symbol_view *sym);
 
 /* sort.c */
-void			sort_symbols(t_symbol *symbols, size_t count);
+int				sort_symbols(t_symbol *symbols, size_t count);
 
 /* render.c */
 void			print_file_header(const char *path);
