@@ -139,61 +139,9 @@ static void	save_symbol(t_symbol *dst, size_t *index,
 	(*index)++;
 }
 
-static void	build_sort_key(const char *name, char *dst, size_t cap)
-{
-	size_t	i;
-
-	i = 0;
-	while (*name == '_')
-		name++;
-	while (*name && i + 1 < cap)
-	{
-		if (ft_isalnum((unsigned char)*name))
-		{
-			if (ft_isalpha((unsigned char)*name))
-				dst[i++] = (char)ft_tolower((unsigned char)*name);
-			else
-				dst[i++] = *name;
-		}
-		name++;
-	}
-	dst[i] = '\0';
-}
-
-static int	compare_sort_key(const char *a, const char *b)
-{
-	char	key_a[256];
-	char	key_b[256];
-	int		cmp;
-
-	build_sort_key(a, key_a, sizeof(key_a));
-	build_sort_key(b, key_b, sizeof(key_b));
-	cmp = ft_strcmp(key_a, key_b);
-	if (cmp != 0)
-		return (cmp);
-	return (ft_strcmp(a, b));
-}
-
 static int	compare_symbols(const t_symbol *a, const t_symbol *b)
 {
-	const char	*ta;
-	const char	*tb;
-	int			cmp;
-
-	ta = a->name;
-	tb = b->name;
-	cmp = compare_sort_key(ta, tb);
-	if (cmp != 0)
-		return (cmp);
-	if (a->value < b->value)
-		return (-1);
-	if (a->value > b->value)
-		return (1);
-	if (a->type_char < b->type_char)
-		return (-1);
-	if (a->type_char > b->type_char)
-		return (1);
-	return (0);
+	return (strcoll(a->name, b->name));
 }
 
 static void	sort_symbols(t_symbol *symbols, size_t count)

@@ -25,7 +25,7 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
   - It only runs clean outside valgrind because the next page happens to be mapped. The subject forbids this: *"In no way can your program quit in an unexpected manner"*.
   - Fix: require `e_shentsize == sizeof(Elf{32,64}_Shdr)` (40 / 64) in `load_section_table` ([src/ctx.c:129](src/ctx.c:129)), and symtab `sh_entsize == sizeof(Elf{32,64}_Sym)` (16 / 24) in `check_symtab_shape` ([src/sections.c:61](src/sections.c:61)). Otherwise report the file as corrupt.
 
-- [ ] **2. Sort order is wrong.** `nm` calls `setlocale(LC_ALL, "")` and sorts names with `strcoll`. The home-made key in `build_sort_key` / `compare_sort_key` ([src/symbols.c:142](src/symbols.c:142)) breaks ties with `strcmp`, so:
+- [x] **2. Sort order is wrong.** `nm` calls `setlocale(LC_ALL, "")` and sorts names with `strcoll`. The home-made key in `build_sort_key` / `compare_sort_key` ([src/symbols.c:142](src/symbols.c:142)) breaks ties with `strcmp`, so:
   - UTF-8 locale: `AB` comes before `ab`, and `_Alpha` before `__alpha`/`alpha`. `nm` gives `a__b, a_b, ab, AB, __alpha, alpha, _Alpha`.
   - `LC_ALL=C`: everything is wrong. `nm` uses plain byte order there (`Zeta` before `_Alpha` before `a__b`), and ft_nm ignores the locale.
   - Names longer than 255 characters (common in C++) get a truncated key.

@@ -6,6 +6,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <locale.h>
+#include <string.h>
 #include <libft.h>
 
 #define DEFAULT_FILE "a.out"

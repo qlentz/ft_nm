@@ -27,6 +27,7 @@ int	main(int ac, char **av)
 {
 	int	status;
 
+	setlocale(LC_ALL, "");
 	if (ac <= 1)
 		return (ft_nm(DEFAULT_FILE));
 	status = 0;
