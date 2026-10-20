@@ -9,7 +9,7 @@ Requirements are in [SUBJECT.md](SUBJECT.md). No bonus for this project.
 - **fuzz**: 7,000 random mutations, no crash, hang or silent failure.
 - **bench**: timings appended to [tests/history.csv](tests/history.csv) with the date and commit, to track the performance work.
 
-The code passes `norminette` (src, `ft_nm.h`, libft).
+Every C file and header in the repo passes `norminette` (src, `ft_nm.h`, libft, tests/src); `make test` checks it.
 
 **Deliberate differences from nm** (be ready to explain them):
 - Cosmetic: `ft_nm:` prefix, `strerror` wording, no `Warning:` prefix, specific reasons for corrupt files.
@@ -43,7 +43,7 @@ The code passes `norminette` (src, `ft_nm.h`, libft).
 
 ## Final checklist before pushing to the evaluation repo
 
-- [ ] `norminette src ft_nm.h libft` reports no errors.
+- [ ] `make test-quick` shows the norm section passing (every C file and header in the repo, tests included).
 - [ ] Fresh clone → `make` → `make` (no relink) → `make re` → `make clean` → `make fclean` all succeed.
 - [ ] `make test` passes on the evaluation machine.
 - [ ] No build artifacts committed. Decide whether `SUBJECT.md`, `TODO.md` and `tests/` stay in the turned-in repo.

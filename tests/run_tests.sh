@@ -6,6 +6,7 @@
 #             (no valgrind, fuzzing or benchmarks)
 #
 # Sections:
+#   norm        every C file and header in the repo passes norminette.
 #   compare     valid files, system files and error cases: stdout and exit
 #               code must equal nm's, and stderr must be empty exactly when
 #               nm's is. Run in a UTF-8 locale and in LC_ALL=C.
@@ -71,6 +72,27 @@ echo "  commit $COMMIT, inputs built in $(elapsed "$START")s"
 UTF8_LOCALE=$(locale -a 2>/dev/null | grep -iE '^(en_US|C)\.utf-?8$' | sort -r | head -1)
 LOCALES="C"
 [ -n "$UTF8_LOCALE" ] && LOCALES="$UTF8_LOCALE C"
+
+# --------------------------------------------------------------------------
+title "norm"
+START=$(now)
+if command -v norminette >/dev/null; then
+	pass=0; total=0
+	while read -r f; do
+		total=$((total + 1))
+		if norminette "$f" 2>/dev/null | grep -q '^Error'; then
+			fail "$f"
+			norminette "$f" 2>/dev/null | grep '^Error' | head -3 | sed 's/^/      /'
+		else
+			pass=$((pass + 1))
+		fi
+	done < <(cd "$ROOT" && find . \( -name '*.c' -o -name '*.h' \) \
+		-not -path './obj/*' -not -path './libft/obj/*' -not -path './tests/build/*' \
+		| sort)
+	report norm "$pass" "$total" "$START"
+else
+	echo "  norminette not installed: skipped"
+fi
 
 # --------------------------------------------------------------------------
 title "compare with nm (locales: $LOCALES)"

@@ -211,7 +211,10 @@ def gen_valid(out):
     cxx = shutil.which("g++")
     builds = [
         ("basic.o", [cc, "-c", "basic.c"]),
-        ("sort_names.o", [cc, "-c", "sort_names.c"]),
+        ("sort_names.o", ["as", "sort_names.s"]),
+        ("sort_names32.o", ["as", "--32", "sort_names.s"]),
+        ("tls.o", [cc, "-c", "tls.c"]),
+        ("tls32.o", [cc, "-m32", "-c", "tls.c"]),
         ("kinds.o", [cc, "-c", "-fPIC", "kinds.c"]),
         ("ifunc.o", [cc, "-c", "ifunc.c"]),
         ("common.o", [cc, "-c", "-fcommon", "common.c"]),

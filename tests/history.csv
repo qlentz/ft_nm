@@ -26,3 +26,6 @@ date,commit,kind,name,value1,value2
 2026-10-20T23:17:48+02:00,1be43a4,bench,many_sections.o,0.02,0.05
 2026-10-20T23:17:48+02:00,1be43a4,bench,lib.a,0.00,0.01
 2026-10-20T23:17:48+02:00,1be43a4,bench,libc.so.6,0.01,0.02
+2026-10-20T23:35:21+02:00,1142ae3,section,norm,87/87,5.44
+2026-10-20T23:35:21+02:00,1142ae3,section,compare,206/206,3.25
+2026-10-20T23:35:21+02:00,1142ae3,section,robustness,180/180,1.83
