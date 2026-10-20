@@ -73,7 +73,7 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
   - Editing `ft_nm.h` triggers no rebuild. Add the header as a prerequisite, or use `-MMD -MP` and `-include $(DEPS)`.
   - Optional: `libft/Makefile` `clean` uses an undefined `$(BONUS_OBJS)`.
 
-- [ ] **9. Add a `.gitignore`** for `*.o`, `*.a` and `ft_nm`. After a build, `git status` lists about 60 untracked object files, and committing them by accident looks bad at the defense.
+- [x] **9. Add a `.gitignore`** for `*.o`, `*.a` and `ft_nm`. After a build, `git status` lists about 60 untracked object files, and committing them by accident looks bad at the defense.
 
 - [ ] **10. Check every parsed value.** The subject says: *"Make sure that every value that you parse is correct … flags, architecture, match your result with a reference"*.
   - Check `EI_VERSION == EV_CURRENT`, `e_ehsize`, the `e_shentsize` check from P0-1, `e_shoff`, and `sh_link`/`sh_type` (the last two are already partly done).
