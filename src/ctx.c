@@ -102,14 +102,11 @@ int	init_nmctx(t_file *file, t_nmctx *ctx)
 	return (init_header_view(file, ctx));
 }
 
-static void	store_sht_info(t_nmctx *ctx, size_t offset,
-		uint16_t entsize, uint16_t count, uint16_t str,
+static void	store_sht_info(t_nmctx *ctx, uint16_t entsize, uint16_t count,
 		const unsigned char *base)
 {
-	ctx->sht.offset = offset;
 	ctx->sht.entry_size = entsize;
 	ctx->sht.count = count;
-	ctx->sht.str_index = str;
 	ctx->sht.size_bytes = (size_t)entsize * count;
 	ctx->sht.base = base;
 }
@@ -146,55 +143,33 @@ int	load_section_table(t_nmctx *ctx)
 	read_sht_fields(ctx, &offset, &entsize, &count, &str);
 	if (entsize != (ctx->meta.is_64 ? sizeof(t_elf64shdr) : sizeof(t_elf32shdr))
 		|| !count || str >= count)
-	{
 		return (nm_error(ctx->file->path, "invalid section header table"));
-	}
 	base = offptr(ctx->file, offset, (size_t)entsize * count);
 	if (!base)
-	{
 		return (nm_error(ctx->file->path, "section header table truncated"));
-	}
-	store_sht_info(ctx, offset, entsize, count, str, base);
-	return (0);
-}
-
-static int	store_slice(t_nmctx *ctx, const t_section_meta *meta,
-		t_symtab_slice *slice)
-{
-	if (slice->present)
-		return (0);
-	if (populate_symtab_slice(ctx, meta, slice) != 0)
-		return (1);
-	slice->present = 1;
-	return (0);
-}
-
-static int	process_section(t_nmctx *ctx, size_t index)
-{
-	t_section_meta	meta;
-
-	if (read_section_meta(ctx, index, &meta) != 0)
-		return (nm_error(ctx->file->path, "invalid section header"));
-	if (meta.type == SHT_SYMTAB)
-		return (store_slice(ctx, &meta, &ctx->symtab));
-	//if (meta.type == SHT_DYNSYM)
-	//	return (store_slice(ctx, &meta, &ctx->dynsym));
+	store_sht_info(ctx, entsize, count, base);
 	return (0);
 }
 
 int	load_symbol_tables(t_nmctx *ctx)
 {
-	size_t	i;
+	t_section_meta	meta;
+	size_t			i;
 
 	if (!ctx)
 		return (1);
 	i = 0;
 	while (i < ctx->sht.count)
 	{
-		if (process_section(ctx, i) != 0)
-			return (1);
-		if (ctx->symtab.present && ctx->dynsym.present)
+		if (read_section_meta(ctx, i, &meta) != 0)
+			return (nm_error(ctx->file->path, "invalid section header"));
+		if (meta.type == SHT_SYMTAB)
+		{
+			if (populate_symtab_slice(ctx, &meta, &ctx->symtab) != 0)
+				return (1);
+			ctx->symtab.present = 1;
 			return (0);
+		}
 		++i;
 	}
 	return (0);

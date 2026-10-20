@@ -24,15 +24,12 @@ typedef struct {
     void *mem;
     struct stat st;
     size_t size;
-    int elf_class;
 } t_file;
 
 typedef struct s_sh_table {
-    size_t offset;
     size_t size_bytes;
     uint16_t entry_size;
     uint16_t count;
-    uint16_t str_index;
     const unsigned char *base;
 }   t_sh_table;
 
@@ -42,12 +39,11 @@ typedef struct s_section_meta {
     size_t offset;
     size_t size;
     uint32_t link;
-    uint32_t info;
     size_t entsize;
     uint64_t flags;
 }   t_section_meta;
 
-enum { EI_MAG0=0, EI_MAG1, EI_MAG2, EI_MAG3, EI_CLASS=4, EI_DATA=5, EI_NIDENT=16 };
+enum { EI_CLASS=4, EI_DATA=5, EI_NIDENT=16 };
 #define ELFMAG0 0x7f
 #define ELFMAG1 'E'
 #define ELFMAG2 'L'
@@ -56,18 +52,9 @@ enum { EI_MAG0=0, EI_MAG1, EI_MAG2, EI_MAG3, EI_CLASS=4, EI_DATA=5, EI_NIDENT=16
 #define ELFCLASS64 2
 #define ELFDATA2LSB 1   // little-endian
 #define ELFDATA2MSB 2   // big-endian
-#define SHT_NULL 0
-#define SHT_PROGBITS 1
 #define SHT_SYMTAB 2
 #define SHT_STRTAB 3
-#define SHT_RELA 4
-#define SHT_HASH 5
-#define SHT_DYNAMIC 6
-#define SHT_NOTE 7
 #define SHT_NOBITS 8
-#define SHT_REL 9
-#define SHT_SHLIB 10
-#define SHT_DYNSYM 11
 
 #define SHN_UNDEF 0
 #define SHN_ABS 0xfff1
@@ -82,13 +69,9 @@ enum { EI_MAG0=0, EI_MAG1, EI_MAG2, EI_MAG3, EI_CLASS=4, EI_DATA=5, EI_NIDENT=16
 #define STB_WEAK 2
 #define STB_GNU_UNIQUE 10
 
-#define STT_NOTYPE 0
 #define STT_OBJECT 1
-#define STT_FUNC 2
 #define STT_SECTION 3
 #define STT_FILE 4
-#define STT_COMMON 5
-#define STT_TLS 6
 #define STT_GNU_IFUNC 10
 
 #define ELF_ST_BIND(i) ((i) >> 4)
@@ -196,20 +179,16 @@ typedef struct s_nmctx {
     const t_elf64header *hdr64;
     t_sh_table sht;
     t_symtab_slice symtab;
-    t_symtab_slice dynsym;
 }   t_nmctx;
 
 typedef struct s_symbol_view
 {
 	uint32_t		name;
 	uint64_t		value;
-	uint64_t		size;
 	unsigned char	info;
-	unsigned char	other;
 	uint16_t		shndx;
 }	t_symbol_view;
 
-//peu d'impact car toujours little endian sur x86 pour ce projet
 uint16_t r_u16(const void *p, int is_le);
 uint32_t r_u32(const void *p, int is_le);
 uint64_t r_u64(const void *p, int is_le);
@@ -227,7 +206,6 @@ int init_nmctx(t_file *file, t_nmctx *ctx);
 int load_section_table(t_nmctx *ctx);
 int load_symbol_tables(t_nmctx *ctx);
 
-const unsigned char *section_header_view(const t_nmctx *ctx, size_t index);
 int read_section_meta(const t_nmctx *ctx, size_t index, t_section_meta *meta);
 int populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta, t_symtab_slice *dst);
 

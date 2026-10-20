@@ -1,26 +1,13 @@
 #include <stdlib.h>
 #include "ft_nm.h"
-#include "libft.h"
-
-
-static t_symtab_slice	*active_symtab(t_nmctx *ctx)
-{
-	if (ctx->symtab.present)
-		return (&ctx->symtab);
-	if (ctx->dynsym.present)
-		return (&ctx->dynsym);
-	return (NULL);
-}
 
 static void	fill_symbol64(const t_nmctx *ctx,
 		const t_elf64sym *sym, t_symbol_view *view)
 {
 	view->name = r_u32(&sym->st_name, ctx->meta.is_le);
 	view->info = sym->st_info;
-	view->other = sym->st_other;
 	view->shndx = r_u16(&sym->st_shndx, ctx->meta.is_le);
 	view->value = r_u64(&sym->st_value, ctx->meta.is_le);
-	view->size = r_u64(&sym->st_size, ctx->meta.is_le);
 }
 
 static void	fill_symbol32(const t_nmctx *ctx,
@@ -28,10 +15,8 @@ static void	fill_symbol32(const t_nmctx *ctx,
 {
 	view->name = r_u32(&sym->st_name, ctx->meta.is_le);
 	view->info = sym->st_info;
-	view->other = sym->st_other;
 	view->shndx = r_u16(&sym->st_shndx, ctx->meta.is_le);
 	view->value = r_u32(&sym->st_value, ctx->meta.is_le);
-	view->size = r_u32(&sym->st_size, ctx->meta.is_le);
 }
 
 static int	read_symbol_view(const t_nmctx *ctx,
@@ -237,8 +222,8 @@ int	render_symbols(t_nmctx *ctx, int show_name)
 
 	if (show_name)
 		print_file_header(ctx->file->path);
-	slice = active_symtab(ctx);
-	if (!slice)
+	slice = &ctx->symtab;
+	if (!slice->present)
 	{
 		nm_error(ctx->file->path, "no symbols");
 		return (0);

@@ -1,6 +1,5 @@
 #include <ft_nm.h>
 
-// Already have this, keep using it everywhere:
 const void *offptr(const t_file *f, size_t off, size_t len) {
     if (!f || !f->mem) return NULL;
     if (off > f->size) return NULL;

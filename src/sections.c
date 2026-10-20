@@ -1,6 +1,6 @@
 #include "ft_nm.h"
 
-const unsigned char	*section_header_view(const t_nmctx *ctx, size_t index)
+static const unsigned char	*section_header_view(const t_nmctx *ctx, size_t index)
 {
 	size_t	offset;
 	size_t	stride;
@@ -23,7 +23,6 @@ static void	fill_meta64(const t_nmctx *ctx,
 	meta->offset = (size_t)r_u64(&sh->sh_offset, ctx->meta.is_le);
 	meta->size = (size_t)r_u64(&sh->sh_size, ctx->meta.is_le);
 	meta->link = r_u32(&sh->sh_link, ctx->meta.is_le);
-	meta->info = r_u32(&sh->sh_info, ctx->meta.is_le);
 	meta->entsize = (size_t)r_u64(&sh->sh_entsize, ctx->meta.is_le);
 	meta->flags = r_u64(&sh->sh_flags, ctx->meta.is_le);
 }
@@ -36,7 +35,6 @@ static void	fill_meta32(const t_nmctx *ctx,
 	meta->offset = (size_t)r_u32(&sh->sh_offset, ctx->meta.is_le);
 	meta->size = (size_t)r_u32(&sh->sh_size, ctx->meta.is_le);
 	meta->link = r_u32(&sh->sh_link, ctx->meta.is_le);
-	meta->info = r_u32(&sh->sh_info, ctx->meta.is_le);
 	meta->entsize = (size_t)r_u32(&sh->sh_entsize, ctx->meta.is_le);
 	meta->flags = r_u32(&sh->sh_flags, ctx->meta.is_le);
 }
