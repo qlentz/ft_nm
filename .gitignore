@@ -2,3 +2,6 @@
 *.a
 *.d
 /ft_nm
+/obj/
+/libft/obj/
+/compile_commands.json

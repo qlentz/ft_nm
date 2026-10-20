@@ -9,7 +9,9 @@ SRCS		= ft_isalpha.c ft_memcmp.c ft_putendl_fd.c ft_striteri.c ft_strncmp.c ft_t
 				ft_lstdelone_bonus.c ft_lstlast_bonus.c ft_lstnew_bonus.c ft_strcmp.c ft_isspace.c ft_atod.c ft_free_tab.c gnl_utils.c\
 				get_next_line.c
 
-OBJS	= $(SRCS:.c=.o)
+OBJ_DIR	= obj
+
+OBJS	= $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 
 DEPS	= $(OBJS:.o=.d)
 
@@ -19,16 +21,19 @@ CFLAGS	= -Wall -Wextra -Werror -MMD -MP -I.
 
 RM		= rm -f
 
-.c.o:
-			${CC} ${CFLAGS} -c $< -o ${<:.c=.o}
-
 all: 		$(NAME)
 
 $(NAME):	$(OBJS)
 			ar rcs $(NAME) $(OBJS)
 
+$(OBJ_DIR)/%.o:	%.c | $(OBJ_DIR)
+			$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR):
+			mkdir -p $(OBJ_DIR)
+
 clean:
-			$(RM) $(OBJS) $(DEPS)
+			$(RM) -r $(OBJ_DIR)
 
 fclean:		clean
 			$(RM) $(NAME)

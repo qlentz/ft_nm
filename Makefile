@@ -1,11 +1,15 @@
 NAME 	= ft_nm
 
-SRCS	= src/main.c src/errors.c src/file.c src/readers.c src/safety_utils.c \
-		  src/elf_ident.c src/elf_utils.c src/elf_header.c src/section_table.c \
-		  src/sections.c src/symtab.c src/symbol_read.c src/symbol_type.c \
-		  src/sort.c src/render.c src/formatting.c
+SRC_DIR	= src
 
-OBJS	= $(SRCS:.c=.o)
+OBJ_DIR	= obj
+
+SRCS	= main.c errors.c file.c readers.c safety_utils.c \
+		  elf_ident.c elf_utils.c elf_header.c section_table.c \
+		  sections.c symtab.c symbol_read.c symbol_type.c \
+		  sort.c render.c formatting.c
+
+OBJS	= $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 
 DEPS	= $(OBJS:.o=.d)
 
@@ -19,9 +23,6 @@ CFLAGS	= -Wall -Wextra -Werror -MMD -MP -I. -I $(LIBFT_DIR)
 
 RM		= rm -f
 
-.c.o:
-			${CC} ${CFLAGS} -c $< -o ${<:.c=.o}
-
 all:		$(NAME)
 
 $(NAME):	$(OBJS) $(LIBFT)
@@ -30,8 +31,14 @@ $(NAME):	$(OBJS) $(LIBFT)
 $(LIBFT):	FORCE
 			@$(MAKE) -sC $(LIBFT_DIR)
 
+$(OBJ_DIR)/%.o:	$(SRC_DIR)/%.c | $(OBJ_DIR)
+			$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR):
+			mkdir -p $(OBJ_DIR)
+
 clean:
-			$(RM) $(OBJS) $(DEPS)
+			$(RM) -r $(OBJ_DIR)
 			@$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean:		clean
