@@ -57,33 +57,34 @@ static int	resolve_extended(t_nmctx *ctx, t_sht_fields *f)
 	return (0);
 }
 
-/* Section names come from the e_shstrndx string table, if it is valid. */
-static void	load_section_names(t_nmctx *ctx, size_t strndx)
+/*
+** Returns 1 if the table position is valid, 0 if there is no section table
+** (e_shoff == 0): like nm, that means "no symbols" for executables and
+** shared objects. A relocatable without one, or a table overlapping the
+** ELF header, is an error (-1).
+*/
+static int	check_table_position(const t_nmctx *ctx, const t_sht_fields *f)
 {
-	t_section_meta	meta;
-
-	if (strndx == SHN_UNDEF || read_section_meta(ctx, strndx, &meta) != 0
-		|| meta.type != SHT_STRTAB)
-		return ;
-	ctx->sht.names = offptr(ctx->file, meta.offset, meta.size);
-	if (ctx->sht.names)
-		ctx->sht.names_size = meta.size;
+	if (f->offset == 0 && f->type != ET_REL)
+		return (0);
+	if (f->offset < elf_header_size(&ctx->meta))
+	{
+		nm_error(ctx->file->path, "file format not recognized");
+		return (-1);
+	}
+	return (1);
 }
 
-/*
-** Without a section table (e_shoff == 0) there are no symbols; like nm,
-** that is only accepted for executables and shared objects.
-*/
 int	load_section_table(t_nmctx *ctx)
 {
 	t_sht_fields	f;
 	size_t			bytes;
+	int				position;
 
 	read_sht_fields(ctx, &f);
-	if (f.offset == 0 && f.type == ET_REL)
-		return (nm_error(ctx->file->path, "file format not recognized"));
-	if (f.offset == 0)
-		return (0);
+	position = check_table_position(ctx, &f);
+	if (position != 1)
+		return (position == -1);
 	if (f.entsize != elf_shdr_size(&ctx->meta))
 		return (nm_error(ctx->file->path, "invalid section header table"));
 	if ((f.count == 0 || f.strndx == SHN_XINDEX)
@@ -98,17 +99,5 @@ int	load_section_table(t_nmctx *ctx)
 	ctx->sht.entry_size = f.entsize;
 	ctx->sht.count = f.count;
 	ctx->sht.size_bytes = bytes;
-	load_section_names(ctx, f.strndx);
-	return (0);
-}
-
-const char	*section_name(const t_nmctx *ctx, const t_section_meta *meta)
-{
-	const char	*name;
-
-	name = safe_cstr_in_table(ctx->sht.names, ctx->sht.names_size,
-			meta->name_index);
-	if (!name)
-		return ("");
-	return (name);
+	return (load_section_names(ctx, f.strndx));
 }

@@ -300,6 +300,9 @@ int				process_elf(t_file *file, int show_name);
 
 /* section_table.c */
 int				load_section_table(t_nmctx *ctx);
+
+/* section_names.c */
+int				load_section_names(t_nmctx *ctx, size_t strndx);
 const char		*section_name(const t_nmctx *ctx, const t_section_meta *meta);
 
 /* symbol_tables.c */

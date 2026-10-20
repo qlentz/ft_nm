@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 22:38:15 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,12 @@ static const char	*stat_error(const struct stat *st)
 	return (NULL);
 }
 
+/* O_NONBLOCK: opening a FIFO must not wait for a writer before fstat. */
 static int	open_for_map(const char *path, t_file *file)
 {
 	const char	*err;
 
-	file->fd = open(path, O_RDONLY);
+	file->fd = open(path, O_RDONLY | O_NONBLOCK);
 	if (file->fd < 0)
 		return (nm_error(path, strerror(errno)));
 	if (fstat(file->fd, &file->st) < 0)

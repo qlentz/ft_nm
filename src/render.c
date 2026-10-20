@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 22:12:02 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 22:43:00 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ static int	collect_symbols(const t_nmctx *ctx, t_symbol **out, size_t *count)
 	return (0);
 }
 
+/* Like nm, a table holding only the null symbol 0 means "no symbols". */
 int	render_symbols(t_nmctx *ctx, int show_name)
 {
 	t_symbol	*symbols;
@@ -70,7 +71,8 @@ int	render_symbols(t_nmctx *ctx, int show_name)
 
 	if (show_name)
 		print_file_header(ctx->file->path);
-	if (!ctx->symtab.present || check_symbol_kinds(ctx) != 0)
+	if (!ctx->symtab.present || ctx->symtab.count <= 1
+		|| check_symbol_kinds(ctx) != 0)
 	{
 		nm_error(ctx->file->path, "no symbols");
 		return (0);
