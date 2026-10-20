@@ -24,11 +24,11 @@ The code passes `norminette` (src, `ft_nm.h`, libft).
 
 ## P0 — Blocking
 
-- [ ] **1. Performance.** The insertion sort is O(n²), and `strcoll` is slower than `strcmp`. Output is one `write()` per character.
-  - 50,000-symbol `.o`: **17.5 s** (`nm`: 0.05 s). 10,000 symbols: 0.74 s. `libc.so.6`: 0.29 s (`nm`: 0.02 s).
-  - Printing libc makes **295,815 `write` syscalls** for 8,122 lines.
-  - Fix: a stable merge sort, which keeps equal names in symbol-table order (needed to match libc). Buffer the output, for example a 4 KiB buffer flushed when full and at the end of each file. Flush stdout before writing an error so the two streams stay in order. Keep every new file within the Norm.
-  - Check the gain with `make test`: the bench rows in `tests/history.csv` keep every run.
+- [ ] **1. Performance.**
+  - Done: stable merge sort ([src/sort.c](src/sort.c)). 50,000 symbols: 17.7 s → 0.38 s. libc: 0.30 s → 0.07 s.
+  - Next, output: one `write()` per byte (1.9 million calls for the 50,000-symbol file). That is now most of the time: 0.26 s of the 0.38 s is system time to `/dev/null`, and 1.2 s through a pipe. Buffer the output, for example a 4 KiB buffer flushed when full and at the end of each file. Flush stdout before writing an error so the two streams stay in order. Keep every new file within the Norm.
+  - Optional afterwards: `strcoll` is still 58% of the instructions on the 50,000-symbol file. `strxfrm` keys compared with `strcmp` would cut that, at the cost of memory.
+  - Check each gain with `make test`: the bench rows in `tests/history.csv` keep every run.
 
 ## P2 — Defense prep
 
