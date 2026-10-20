@@ -222,28 +222,31 @@ static int	collect_symbols(t_nmctx *ctx, const t_symtab_slice *slice,
 	return (0);
 }
 
-int	render_symbols(t_nmctx *ctx, const char *filename)
+static void	print_file_header(const char *path)
+{
+	ft_putchar_fd('\n', STDOUT_FILENO);
+	ft_putstr_fd(path, STDOUT_FILENO);
+	ft_putendl_fd(":", STDOUT_FILENO);
+}
+
+int	render_symbols(t_nmctx *ctx, int show_name)
 {
 	t_symtab_slice	*slice;
 	t_symbol		*symbols;
 	size_t			count;
 
+	if (show_name)
+		print_file_header(ctx->file->path);
 	slice = active_symtab(ctx);
 	if (!slice)
 	{
-		//ft_putstr_fd(filename, STDOUT_FILENO);
-		ft_printf("ft_nm: %s", filename);
-		ft_putendl_fd(": no symbols", STDOUT_FILENO);
+		nm_error(ctx->file->path, "no symbols");
 		return (0);
 	}
 	if (collect_symbols(ctx, slice, &symbols, &count) != 0)
-		return (1);
+		return (nm_error(ctx->file->path, strerror(ENOMEM)));
 	if (!symbols || !count)
-	{
-		ft_putstr_fd(filename, STDOUT_FILENO);
-		ft_putendl_fd(": no symbols", STDOUT_FILENO);
 		return (0);
-	}
 	sort_symbols(symbols, count);
 	print_symbols(ctx, symbols, count);
 	free(symbols);

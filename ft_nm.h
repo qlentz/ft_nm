@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
 #include <locale.h>
 #include <string.h>
 #include <libft.h>
@@ -18,6 +19,7 @@ typedef struct {
 }   t_ElfMeta;
 
 typedef struct {
+    const char *path;
     int fd;
     void *mem;
     struct stat st;
@@ -229,8 +231,10 @@ const unsigned char *section_header_view(const t_nmctx *ctx, size_t index);
 int read_section_meta(const t_nmctx *ctx, size_t index, t_section_meta *meta);
 int populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta, t_symtab_slice *dst);
 
-int render_symbols(t_nmctx *ctx, const char *filename);
-int process_elf(t_file *file, const char *filename);
+int render_symbols(t_nmctx *ctx, int show_name);
+int process_elf(t_file *file, int show_name);
+
+int nm_error(const char *path, const char *msg);
 
 void	print_symbols(const t_nmctx *ctx, t_symbol *symbols, size_t count);
 #endif

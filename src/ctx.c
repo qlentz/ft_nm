@@ -7,17 +7,35 @@ static void	close_fd(int *fd)
 	*fd = -1;
 }
 
+static const char	*stat_error(const struct stat *st)
+{
+	if (S_ISDIR(st->st_mode))
+		return ("is a directory");
+	if (!S_ISREG(st->st_mode))
+		return ("not an ordinary file");
+	if (st->st_size <= 0)
+		return ("file format not recognized");
+	return (NULL);
+}
+
 static int	open_for_map(const char *path, t_file *file)
 {
+	const char	*err;
+
 	if (!path || !file)
 		return (1);
 	file->fd = open(path, O_RDONLY);
 	if (file->fd < 0)
-		return (1);
-	if (fstat(file->fd, &file->st) < 0 || file->st.st_size <= 0)
+		return (nm_error(path, strerror(errno)));
+	err = NULL;
+	if (fstat(file->fd, &file->st) < 0)
+		err = strerror(errno);
+	else
+		err = stat_error(&file->st);
+	if (err)
 	{
 		close_fd(&file->fd);
-		return (1);
+		return (nm_error(path, err));
 	}
 	file->size = file->st.st_size;
 	return (0);
@@ -29,6 +47,7 @@ int	map_file(const char *path, t_file *file)
 		return (1);
 	ft_bzero(file, sizeof(*file));
 	file->fd = -1;
+	file->path = path;
 	if (open_for_map(path, file) != 0)
 		return (1);
 	file->mem = mmap(NULL, file->size, PROT_READ, MAP_PRIVATE, file->fd, 0);
@@ -36,7 +55,7 @@ int	map_file(const char *path, t_file *file)
 	{
 		file->mem = NULL;
 		close_fd(&file->fd);
-		return (1);
+		return (nm_error(path, strerror(errno)));
 	}
 	close_fd(&file->fd);
 	return (0);
@@ -63,8 +82,7 @@ static int	init_header_view(const t_file *file, t_nmctx *ctx)
 	view = (void *)offptr(file, 0, header_size);
 	if (!view)
 	{
-		ft_putendl_fd("ft_nm: truncated ELF header", STDERR_FILENO);
-		return (1);
+		return (nm_error(file->path, "truncated ELF header"));
 	}
 	if (ctx->meta.is_64)
 		ctx->hdr64 = view;
@@ -129,14 +147,12 @@ int	load_section_table(t_nmctx *ctx)
 	if (entsize != (ctx->meta.is_64 ? sizeof(t_elf64shdr) : sizeof(t_elf32shdr))
 		|| !count || str >= count)
 	{
-		ft_putendl_fd("ft_nm: invalid section header table", STDERR_FILENO);
-		return (1);
+		return (nm_error(ctx->file->path, "invalid section header table"));
 	}
 	base = offptr(ctx->file, offset, (size_t)entsize * count);
 	if (!base)
 	{
-		ft_putendl_fd("ft_nm: section header table truncated", STDERR_FILENO);
-		return (1);
+		return (nm_error(ctx->file->path, "section header table truncated"));
 	}
 	store_sht_info(ctx, offset, entsize, count, str, base);
 	return (0);
@@ -158,7 +174,7 @@ static int	process_section(t_nmctx *ctx, size_t index)
 	t_section_meta	meta;
 
 	if (read_section_meta(ctx, index, &meta) != 0)
-		return (1);
+		return (nm_error(ctx->file->path, "invalid section header"));
 	if (meta.type == SHT_SYMTAB)
 		return (store_slice(ctx, &meta, &ctx->symtab));
 	//if (meta.type == SHT_DYNSYM)
@@ -184,7 +200,7 @@ int	load_symbol_tables(t_nmctx *ctx)
 	return (0);
 }
 
-int	process_elf(t_file *file, const char *filename)
+int	process_elf(t_file *file, int show_name)
 {
 	t_nmctx	ctx;
 
@@ -194,5 +210,5 @@ int	process_elf(t_file *file, const char *filename)
 		return (1);
 	if (load_symbol_tables(&ctx) != 0)
 		return (1);
-	return (render_symbols(&ctx, filename));
+	return (render_symbols(&ctx, show_name));
 }

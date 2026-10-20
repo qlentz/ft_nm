@@ -64,15 +64,9 @@ static int	check_symtab_shape(const t_nmctx *ctx, const t_section_meta *meta)
 
 	expected = ctx->meta.is_64 ? sizeof(t_elf64sym) : sizeof(t_elf32sym);
 	if (meta->entsize != expected)
-	{
-		ft_putendl_fd("ft_nm: invalid symbol entry size", STDERR_FILENO);
-		return (1);
-	}
+		return (nm_error(ctx->file->path, "invalid symbol entry size"));
 	if (meta->size % meta->entsize != 0)
-	{
-		ft_putendl_fd("ft_nm: corrupted symbol table size", STDERR_FILENO);
-		return (1);
-	}
+		return (nm_error(ctx->file->path, "corrupted symbol table size"));
 	return (0);
 }
 
@@ -82,26 +76,14 @@ static int	load_string_table(t_nmctx *ctx, const t_section_meta *meta,
 	t_section_meta	str;
 
 	if (meta->link >= ctx->sht.count)
-	{
-		ft_putendl_fd("ft_nm: invalid string table link", STDERR_FILENO);
-		return (1);
-	}
+		return (nm_error(ctx->file->path, "invalid string table link"));
 	if (read_section_meta(ctx, meta->link, &str) != 0)
-	{
-		ft_putendl_fd("ft_nm: truncated string table header", STDERR_FILENO);
-		return (1);
-	}
+		return (nm_error(ctx->file->path, "truncated string table header"));
 	if (str.type != SHT_STRTAB)
-	{
-		ft_putendl_fd("ft_nm: symbol table link is not strtab", STDERR_FILENO);
-		return (1);
-	}
+		return (nm_error(ctx->file->path, "symbol table link is not strtab"));
 	*base = (const char *)offptr(ctx->file, str.offset, str.size);
 	if (!*base && str.size)
-	{
-		ft_putendl_fd("ft_nm: string table truncated", STDERR_FILENO);
-		return (1);
-	}
+		return (nm_error(ctx->file->path, "string table truncated"));
 	*size = str.size;
 	return (0);
 }
@@ -115,10 +97,7 @@ int	populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta,
 		return (1);
 	dst->sym_base = offptr(ctx->file, meta->offset, meta->size);
 	if (!dst->sym_base && meta->size)
-	{
-		ft_putendl_fd("ft_nm: symbol table truncated", STDERR_FILENO);
-		return (1);
-	}
+		return (nm_error(ctx->file->path, "symbol table truncated"));
 	dst->sym_size = meta->size;
 	dst->entry_size = meta->entsize;
 	dst->count = meta->size / meta->entsize;

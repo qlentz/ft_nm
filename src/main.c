@@ -1,40 +1,32 @@
 #include "ft_nm.h"
 
-static int	run_file(const char *filename)
+static int	run_file(const char *filename, int show_name)
 {
 	t_file	file;
 	int		ret;
 
-	if (!filename)
-		return (1);
 	if (map_file(filename, &file) != 0)
-	{
-		ft_putstr_fd("ft_nm: failed to map ", STDERR_FILENO);
-		ft_putendl_fd(filename, STDERR_FILENO);
 		return (1);
-	}
-	ret = process_elf(&file, filename);
+	ret = process_elf(&file, show_name);
 	free_file(&file);
 	return (ret);
-}
-
-int	ft_nm(char *filename)
-{
-	return (run_file(filename));
 }
 
 int	main(int ac, char **av)
 {
 	int	status;
+	int	i;
 
 	setlocale(LC_ALL, "");
 	if (ac <= 1)
-		return (ft_nm(DEFAULT_FILE));
+		return (run_file(DEFAULT_FILE, 0));
 	status = 0;
-	while (--ac)
+	i = 1;
+	while (i < ac)
 	{
-		if (ft_nm(*++av) != 0)
+		if (run_file(av[i], ac > 2) != 0)
 			status = 1;
+		++i;
 	}
 	return (status);
 }

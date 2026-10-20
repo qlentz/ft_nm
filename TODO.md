@@ -39,11 +39,11 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
   - The cause is [src/formatting.c:47](src/formatting.c:47), which treats `'u'` as undefined.
   - Fix: decide "blank address" from `shndx == SHN_UNDEF` (store a flag in `t_symbol`) rather than from the letter.
 
-- [ ] **5. No `file:` header when several files are given.** With more than one argument, `nm` prints `\n<file>:\n` before each file's output ([src/main.c:33](src/main.c:33)).
+- [x] **5. No `file:` header when several files are given.** With more than one argument, `nm` prints `\n<file>:\n` before each file's output ([src/main.c:33](src/main.c:33)).
   - The header is still printed when that file then reports "no symbols".
   - It is not printed for open errors (missing file, directory).
 
-- [ ] **6. Error handling differs from `nm`.** The subject says *"behave like the system nm on every other aspect"*. A different program-name prefix is acceptable; the stream, the message meaning and the exit code are not.
+- [x] **6. Error handling differs from `nm`.** The subject says *"behave like the system nm on every other aspect"*. A different program-name prefix is acceptable; the stream, the message meaning and the exit code are not.
 
   | Case | `nm` (stderr, exit code) | `ft_nm` today |
   |---|---|---|
@@ -59,6 +59,7 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
   | no argument and no `a.out` | `nm: 'a.out': No such file`, 1 | `failed to map a.out`, 1 |
 
   - Fix: send every diagnostic to stderr and use `strerror(errno)` for open errors. Check `S_ISDIR` after `fstat` ([src/ctx.c:17](src/ctx.c:17)). Use one "file format not recognized" path for every invalid header. Fix the typo "uknown".
+  - Done: every diagnostic goes through `nm_error` ([src/errors.c](src/errors.c)) as `ft_nm: <file>: <reason>` on stderr. Intentional cosmetic differences from nm: `strerror` wording ("No such file or directory"), no `Warning:` prefix for directories and special files, an empty file reports "file format not recognized" instead of being silent, and corrupt files get a specific reason. Big-endian files still get their own refusal message (see item 10).
 
 ## P1 — Should fix (likely to be tested or criticized)
 

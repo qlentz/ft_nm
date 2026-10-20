@@ -1,7 +1,8 @@
 NAME 	= ft_nm
 
 SRCS	= src/main.c src/elf_ident.c src/safety_utils.c src/readers.c \
-		  src/ctx.c src/sections.c src/symbols.c src/formatting.c
+		  src/ctx.c src/sections.c src/symbols.c src/formatting.c \
+		  src/errors.c
 
 OBJS	= $(SRCS:.c=.o)
 
