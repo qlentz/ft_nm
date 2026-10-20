@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 21:21:59 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,13 @@ static char	binding_letter(const t_symbol_view *sym)
 	return (0);
 }
 
+/* Choice: like nm, a section index past the table counts as absolute. */
 static char	section_letter(const t_nmctx *ctx, const t_symbol_view *sym)
 {
 	t_section_meta	sect;
 
 	if (sym->shndx >= ctx->sht.count)
-		return ('?');
+		return ('A');
 	if (read_section_meta(ctx, sym->shndx, &sect) != 0)
 		return ('?');
 	if (sect.type == SHT_NOBITS && (sect.flags & SHF_ALLOC)

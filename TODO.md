@@ -27,23 +27,28 @@ Known cosmetic differences from nm, kept on purpose:
 
 ## P1 — Should fix (likely to be tested or criticized)
 
-- [ ] **2. Check every parsed value.** The subject says: *"Make sure that every value that you parse is correct … flags, architecture, match your result with a reference"*.
-  - Already checked: magic, `EI_CLASS`, `EI_DATA`, `e_shentsize`, `e_shnum`, `e_shstrndx < e_shnum`, section table bounds, symtab `sh_entsize` and bounds, `sh_link` → `SHT_STRTAB`, string offsets.
-  - Still to check: `EI_VERSION == EV_CURRENT`, `e_ehsize`, and an out-of-range `st_name`. Today ft_nm silently drops that symbol. nm warns `invalid string offset … for section '.strtab'` on stderr and prints the symbol as `<corrupt>`, exit 0.
-  - Decide on `e_machine` (EM_386 = 3, EM_X86_64 = 62) and be ready to explain the choice.
-  - Big-endian files are refused with "big-endian ELF files are not supported" ([src/elf_ident.c](src/elf_ident.c)), but `r_u16/32/64` already support big-endian. Either drop the refusal or keep it and be ready to explain it.
+- [x] **2. Check every parsed value.**
+  - Rejected like nm: bad magic, class or byte order, `EI_VERSION != EV_CURRENT`, bad `e_shentsize`/`e_shnum`/`e_shstrndx`, tables out of bounds, bad symtab `sh_entsize`, `sh_link` not a `SHT_STRTAB`.
+  - A symbol table with an undefined binding (3–9) or type (7) is rejected like nm: one `symbol number N uses unsupported …` message, then `no symbols`, exit 0. Symbol 0 is checked too, but it is never listed.
+  - A name offset outside the string table, or an unterminated name: warning on stderr, symbol printed as `<corrupt>`.
+  - A section index past the table prints `A`/`a`, like nm (commented in [src/symbol_type.c](src/symbol_type.c)).
+  - Big-endian files are listed normally.
+  - Not checked, like nm: `e_ehsize`, `e_type`, `e_machine`. Nothing we parse depends on them. Any machine is accepted; be ready to explain that at the defense.
 
-- [ ] **3. Symbol-letter edge cases** in `section_letter` ([src/symbol_type.c](src/symbol_type.c)), compared with binutils `decode_section_type`:
-  - `SHT_NOBITS` without `SHF_WRITE` should give `b` (today `R`).
-  - A section without `SHF_ALLOC` should give `N` only for debug sections (`.debug*`, `.stab*`). This needs the section name: `t_section_meta.name_index` is read but not used yet. Other read-only sections give `n`, and non-alloc executable sections give `t`.
-  - A binding other than LOCAL/GLOBAL/WEAK/UNIQUE should give `?`.
-  - None of these showed up in the test files, but evaluators like twisted inputs.
+- [ ] **3. Symbol-letter differences from nm** (binutils `bfd_decode_symclass` / `decode_section_type`), in [src/symbol_type.c](src/symbol_type.c). Found by comparing every binding × type × section-index combination and an assembled file with unusual sections:
+  - **Common symbols (real files):** nm prints `st_size` as the value, ft_nm prints `st_value` (the alignment). `char buf[100];` built with `gcc -fcommon` shows `0000000000000064 C buf` in nm and `…0020` in ft_nm. A common symbol is also always `C`, even when local, weak, unique or IFUNC (ft_nm gives `c`, `W`, `u`, `i`).
+  - A local undefined symbol is `U`, not `u`.
+  - A weak symbol of type `STT_COMMON` (5) is `V`/`v`, like `STT_OBJECT`.
+  - Bindings 11–15 (OS/processor-specific) give `?`, except for common symbols.
+  - `SHT_NOBITS` without `SHF_WRITE` gives `b`/`B` (ft_nm: `r`/`R`).
+  - Symbols in debug sections (`.debug*`) are always `N`, even when local (ft_nm: `n`). This needs the section name: load the `e_shstrndx` string table and use `t_section_meta.name_index`.
+  - A non-allocated executable section gives `t`/`T` (ft_nm: `n`/`N`).
 
 - [ ] **4. Decide on static archives (`.a`).** The subject only requires x86_32/x86_64 binaries, object files and `.so`, but `nm` lists every member of an archive (`\n<member>:\n` + symbols) and evaluators often try `libc_nonshared.a`.
   - Today an archive gets "file format not recognized" on stderr, exit 1. That is acceptable if you can explain it.
   - Full support: `!<arch>\n` magic, 60-byte member headers, the GNU `//` long-name table, and skipping the `/` index.
 
-- [ ] **5. Extended section numbering** (`e_shnum == 0`, `e_shstrndx == SHN_XINDEX`, `st_shndx == SHN_XINDEX`). Today this gives "invalid section header table". It is rare, but either support it or be ready to explain why not.
+- [ ] **5. Extended section numbering** (`e_shnum == 0`, `e_shstrndx == SHN_XINDEX`, `st_shndx == SHN_XINDEX`). Today this gives "invalid section header table" (an assembled 70,000-section `.o` lists fine in nm). A symbol with `st_shndx == SHN_XINDEX` currently prints `A`; nm reports a missing `SHT_SYMTAB_SHNDX` section instead. It is rare, but either support it or be ready to explain why not.
 
 ## P2 — Cleanup and defense prep
 

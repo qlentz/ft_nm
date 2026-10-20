@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/29 14:22:50 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 21:21:59 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 /* e_ident */
 # define EI_CLASS 4
 # define EI_DATA 5
+# define EI_VERSION 6
 # define EI_NIDENT 16
 # define ELFMAG0 0x7f
 # define ELFMAG1 'E'
@@ -38,6 +39,7 @@
 # define ELFCLASS64 2
 # define ELFDATA2LSB 1
 # define ELFDATA2MSB 2
+# define EV_CURRENT 1
 
 /* section types, special indexes and flags */
 # define SHT_SYMTAB 2
@@ -54,10 +56,13 @@
 # define STB_LOCAL 0
 # define STB_GLOBAL 1
 # define STB_WEAK 2
+# define STB_NUM 3
+# define STB_LOOS 10
 # define STB_GNU_UNIQUE 10
 # define STT_OBJECT 1
 # define STT_SECTION 3
 # define STT_FILE 4
+# define STT_NUM 7
 # define STT_GNU_IFUNC 10
 
 typedef struct s_elfmeta
@@ -269,6 +274,10 @@ int				populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta,
 int				read_symbol_view(const t_nmctx *ctx, size_t index,
 					t_symbol_view *view);
 int				should_skip_symbol(const t_symbol_view *view, const char *name);
+
+/* symbol_check.c */
+int				check_symbol_kinds(const t_nmctx *ctx);
+const char		*symbol_name(const t_nmctx *ctx, uint32_t offset);
 
 /* symbol_type.c */
 char			classify_symbol(const t_nmctx *ctx, const t_symbol_view *sym);

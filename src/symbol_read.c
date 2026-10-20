@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 21:21:59 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ int	should_skip_symbol(const t_symbol_view *view, const char *name)
 {
 	unsigned char	type;
 
-	if (!name || !name[0])
+	if (!name[0])
 		return (1);
 	type = elf_st_type(view->info);
 	if (type == STT_FILE || type == STT_SECTION)

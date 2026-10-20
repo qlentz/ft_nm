@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 21:39:12 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 21:21:59 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,14 +46,10 @@ int	elf_ident(const t_file *f, t_elfmeta *meta)
 
 	id = f->mem;
 	if (f->size < EI_NIDENT || !check_elf_magic(id)
-		|| parse_elf_class(id, meta) || parse_elf_endianness(id, meta))
+		|| parse_elf_class(id, meta) || parse_elf_endianness(id, meta)
+		|| id[EI_VERSION] != EV_CURRENT)
 	{
 		nm_error(f->path, "file format not recognized");
-		return (-1);
-	}
-	if (!meta->is_le)
-	{
-		nm_error(f->path, "big-endian ELF files are not supported");
 		return (-1);
 	}
 	return (0);

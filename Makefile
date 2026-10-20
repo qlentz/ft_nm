@@ -7,7 +7,7 @@ OBJ_DIR	= obj
 SRCS	= main.c errors.c file.c readers.c safety_utils.c \
 		  elf_ident.c elf_utils.c elf_header.c section_table.c \
 		  sections.c symtab.c symbol_read.c symbol_type.c \
-		  sort.c render.c formatting.c
+		  symbol_check.c sort.c render.c formatting.c
 
 OBJS	= $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 

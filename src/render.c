@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 21:21:59 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@ static void	print_file_header(const char *path)
 	ft_putendl_fd(":", STDOUT_FILENO);
 }
 
-/* Returns 1 if symbol `index` is listed and was stored in `dst`. */
+/*
+** Returns 1 if symbol `index` is listed and was stored in `dst`.
+** Symbol 0 is the reserved null entry and is never listed.
+*/
 static int	fill_symbol(const t_nmctx *ctx, size_t index, t_symbol *dst)
 {
 	t_symbol_view	view;
@@ -27,9 +30,8 @@ static int	fill_symbol(const t_nmctx *ctx, size_t index, t_symbol *dst)
 
 	if (read_symbol_view(ctx, index, &view) != 0)
 		return (0);
-	name = safe_cstr_in_table(ctx->symtab.str_base, ctx->symtab.str_size,
-			view.name);
-	if (!name || should_skip_symbol(&view, name))
+	name = symbol_name(ctx, view.name);
+	if (should_skip_symbol(&view, name))
 		return (0);
 	dst->name = name;
 	dst->value = view.value;
@@ -49,7 +51,7 @@ static int	collect_symbols(const t_nmctx *ctx, t_symbol **out, size_t *count)
 	*out = malloc(sizeof(**out) * ctx->symtab.count);
 	if (!*out)
 		return (1);
-	i = 0;
+	i = 1;
 	while (i < ctx->symtab.count)
 	{
 		*count += fill_symbol(ctx, i, *out + *count);
@@ -65,7 +67,7 @@ int	render_symbols(t_nmctx *ctx, int show_name)
 
 	if (show_name)
 		print_file_header(ctx->file->path);
-	if (!ctx->symtab.present)
+	if (!ctx->symtab.present || check_symbol_kinds(ctx) != 0)
 	{
 		nm_error(ctx->file->path, "no symbols");
 		return (0);
