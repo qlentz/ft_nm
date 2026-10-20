@@ -71,7 +71,7 @@ static char	weak_letter(unsigned char type, const t_symbol_view *sym)
 static char	handle_bindings(const t_symbol_view *sym,
 		unsigned char bind, unsigned char type)
 {
-	if (bind == STB_GNU_UNIQUE)
+	if (bind == STB_GNU_UNIQUE && sym->shndx != SHN_UNDEF)
 		return ('u');
 	if (bind == STB_WEAK)
 		return (weak_letter(type, sym));
@@ -138,6 +138,7 @@ static void	save_symbol(t_symbol *dst, size_t *index,
 	dst[*index].name = name;
 	dst[*index].value = view->value;
 	dst[*index].type_char = type_char;
+	dst[*index].is_undef = (view->shndx == SHN_UNDEF);
 	(*index)++;
 }
 

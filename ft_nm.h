@@ -184,6 +184,7 @@ typedef struct s_symbol {
     const char *name;
     uint64_t value;
     char type_char;
+    int is_undef;
 }   t_symbol;
 
 typedef struct s_nmctx {

@@ -38,15 +38,12 @@ static void	print_hex_value(uint64_t value, int width)
 static void	print_symbol_row(const t_nmctx *ctx, const t_symbol *sym)
 {
 	int	width;
-	int	is_undef;
 
 	if (ctx->meta.is_64)
 		width = 16;
 	else
 		width = 8;
-	is_undef = (sym->type_char == 'U' || sym->type_char == 'u'
-			|| sym->type_char == 'w' || sym->type_char == 'v');
-	if (is_undef)
+	if (sym->is_undef)
 		print_padding(width);
 	else
 		print_hex_value(sym->value, width);

@@ -35,7 +35,7 @@ Audit of commit `f8e8395` (2026-10-20), checked against [SUBJECT.md](SUBJECT.md)
 - [x] **3. Missing type `i` (GNU IFUNC, `STT_GNU_IFUNC` = 10).** ft_nm prints `T`/`t` instead, which accounts for 141 wrong lines in `/usr/lib64/libc.so.6` and also shows up in the IFUNC test objects.
   - Fix: in `classify_symbol` ([src/symbols.c:101](src/symbols.c:101)), return `'i'` for a defined IFUNC symbol. Do it before the weak/unique checks and do not lowercase it, matching `bfd_decode_symclass`.
 
-- [ ] **4. Address is blank for `u` (GNU unique) symbols.** `u` symbols are *defined* (for example C++ inline static locals, `_ZZ7countervE1c`), and `nm` prints their address.
+- [x] **4. Address is blank for `u` (GNU unique) symbols.** `u` symbols are *defined* (for example C++ inline static locals, `_ZZ7countervE1c`), and `nm` prints their address.
   - The cause is [src/formatting.c:47](src/formatting.c:47), which treats `'u'` as undefined.
   - Fix: decide "blank address" from `shndx == SHN_UNDEF` (store a flag in `t_symbol`) rather than from the letter.
 
