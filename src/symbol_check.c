@@ -6,31 +6,23 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 21:19:19 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 22:12:02 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 23:17:31 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
 
-static void	put_size_fd(size_t n, int fd)
-{
-	if (n >= 10)
-		put_size_fd(n / 10, fd);
-	ft_putchar_fd('0' + n % 10, fd);
-}
-
-/* Prints "ft_nm: <file>: symbol number <index> <msg>[<value>]". */
+/* Prints "ft_nm: <file>: symbol number <index><msg>[<value>]". */
 static int	report_symbol(const t_nmctx *ctx, size_t index, const char *msg,
 		long value)
 {
-	ft_putstr_fd("ft_nm: ", STDERR_FILENO);
-	ft_putstr_fd(ctx->file->path, STDERR_FILENO);
-	ft_putstr_fd(": symbol number ", STDERR_FILENO);
-	put_size_fd(index, STDERR_FILENO);
-	ft_putstr_fd(msg, STDERR_FILENO);
-	if (value >= 0)
-		put_size_fd((size_t)value, STDERR_FILENO);
-	ft_putchar_fd('\n', STDERR_FILENO);
+	fflush(stdout);
+	if (value < 0)
+		fprintf(stderr, "ft_nm: %s: symbol number %zu%s\n", ctx->file->path,
+			index, msg);
+	else
+		fprintf(stderr, "ft_nm: %s: symbol number %zu%s%ld\n",
+			ctx->file->path, index, msg, value);
 	return (1);
 }
 
@@ -79,10 +71,8 @@ const char	*symbol_name(const t_nmctx *ctx, uint32_t offset)
 			offset);
 	if (name)
 		return (name);
-	ft_putstr_fd("ft_nm: ", STDERR_FILENO);
-	ft_putstr_fd(ctx->file->path, STDERR_FILENO);
-	ft_putstr_fd(": invalid string offset ", STDERR_FILENO);
-	put_size_fd(offset, STDERR_FILENO);
-	ft_putstr_fd(" in the symbol string table\n", STDERR_FILENO);
+	fflush(stdout);
+	fprintf(stderr, "ft_nm: %s: invalid string offset %u in the symbol "
+		"string table\n", ctx->file->path, offset);
 	return ("<corrupt>");
 }

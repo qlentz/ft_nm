@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 23:04:31 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 23:17:31 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,7 @@
 
 void	print_file_header(const char *path)
 {
-	ft_putchar_fd('\n', STDOUT_FILENO);
-	ft_putstr_fd(path, STDOUT_FILENO);
-	ft_putendl_fd(":", STDOUT_FILENO);
+	printf("\n%s:\n", path);
 }
 
 /*

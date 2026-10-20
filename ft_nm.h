@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/29 14:22:50 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 23:04:31 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 23:17:31 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 # define FT_NM_H
 
 # include <stdint.h>
+# include <inttypes.h>
+# include <stdio.h>
 # include <stdlib.h>
 # include <sys/mman.h>
 # include <fcntl.h>
