@@ -58,9 +58,12 @@ int	read_section_meta(const t_nmctx *ctx, size_t index, t_section_meta *meta)
 	return (0);
 }
 
-static int	check_symtab_shape(const t_section_meta *meta)
+static int	check_symtab_shape(const t_nmctx *ctx, const t_section_meta *meta)
 {
-	if (!meta->entsize)
+	size_t	expected;
+
+	expected = ctx->meta.is_64 ? sizeof(t_elf64sym) : sizeof(t_elf32sym);
+	if (meta->entsize != expected)
 	{
 		ft_putendl_fd("ft_nm: invalid symbol entry size", STDERR_FILENO);
 		return (1);
@@ -108,7 +111,7 @@ int	populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta,
 {
 	if (!ctx || !meta || !dst)
 		return (1);
-	if (check_symtab_shape(meta) != 0)
+	if (check_symtab_shape(ctx, meta) != 0)
 		return (1);
 	dst->sym_base = offptr(ctx->file, meta->offset, meta->size);
 	if (!dst->sym_base && meta->size)
@@ -118,7 +121,7 @@ int	populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta,
 	}
 	dst->sym_size = meta->size;
 	dst->entry_size = meta->entsize;
-	dst->count = (meta->entsize == 0) ? 0 : meta->size / meta->entsize;
+	dst->count = meta->size / meta->entsize;
 	if (load_string_table(ctx, meta, &dst->str_base, &dst->str_size) != 0)
 		return (1);
 	return (0);

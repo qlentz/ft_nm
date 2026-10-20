@@ -126,7 +126,8 @@ int	load_section_table(t_nmctx *ctx)
 	if (!ctx)
 		return (1);
 	read_sht_fields(ctx, &offset, &entsize, &count, &str);
-	if (!entsize || !count || str >= count)
+	if (entsize != (ctx->meta.is_64 ? sizeof(t_elf64shdr) : sizeof(t_elf32shdr))
+		|| !count || str >= count)
 	{
 		ft_putendl_fd("ft_nm: invalid section header table", STDERR_FILENO);
 		return (1);
