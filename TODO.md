@@ -35,20 +35,17 @@ Known cosmetic differences from nm, kept on purpose:
   - Big-endian files are listed normally.
   - Not checked, like nm: `e_ehsize`, `e_type`, `e_machine`. Nothing we parse depends on them. Any machine is accepted; be ready to explain that at the defense.
 
-- [ ] **3. Symbol-letter differences from nm** (binutils `bfd_decode_symclass` / `decode_section_type`), in [src/symbol_type.c](src/symbol_type.c). Found by comparing every binding × type × section-index combination and an assembled file with unusual sections:
-  - **Common symbols (real files):** nm prints `st_size` as the value, ft_nm prints `st_value` (the alignment). `char buf[100];` built with `gcc -fcommon` shows `0000000000000064 C buf` in nm and `…0020` in ft_nm. A common symbol is also always `C`, even when local, weak, unique or IFUNC (ft_nm gives `c`, `W`, `u`, `i`).
-  - A local undefined symbol is `U`, not `u`.
-  - A weak symbol of type `STT_COMMON` (5) is `V`/`v`, like `STT_OBJECT`.
-  - Bindings 11–15 (OS/processor-specific) give `?`, except for common symbols.
-  - `SHT_NOBITS` without `SHF_WRITE` gives `b`/`B` (ft_nm: `r`/`R`).
-  - Symbols in debug sections (`.debug*`) are always `N`, even when local (ft_nm: `n`). This needs the section name: load the `e_shstrndx` string table and use `t_section_meta.name_index`.
-  - A non-allocated executable section gives `t`/`T` (ft_nm: `n`/`N`).
+- [x] **3. Symbol letters follow binutils' `bfd_decode_symclass`** ([src/symbol_type.c](src/symbol_type.c)).
+  - Order: common (`C`, value = `st_size`), undefined (`U`, `w`/`v`), IFUNC (`i`), weak (`W`/`V`), unique (`u`), other OS/processor bindings (`?`), then the section letter, uppercase only for global symbols.
+  - Section letters come from the section flags (`t`, `r`, `d`, `b`, `N` for debug sections by name, `n`, `?`) and the PE names `.idata`/`.drectve` (`i`), `.edata` (`e`), `.pdata` (`p`).
+  - Symbols with an empty name are listed, like nm.
+  - Checked against nm: every binding × type × section-index combination (3,584 cases, both byte orders), an assembled file with 28 kinds of sections, and real `-fcommon` symbols.
 
-- [ ] **4. Decide on static archives (`.a`).** The subject only requires x86_32/x86_64 binaries, object files and `.so`, but `nm` lists every member of an archive (`\n<member>:\n` + symbols) and evaluators often try `libc_nonshared.a`.
-  - Today an archive gets "file format not recognized" on stderr, exit 1. That is acceptable if you can explain it.
-  - Full support: `!<arch>\n` magic, 60-byte member headers, the GNU `//` long-name table, and skipping the `/` index.
+- [x] **4. Static archives (`.a`).** Each member is listed under `\n<member>:` like nm, with GNU long names (`//`) and the `/` and `/SYM64/` indexes skipped ([src/archive.c](src/archive.c), [src/archive_name.c](src/archive_name.c)). All 22 system archives give the same stdout, stderr and exit code as nm.
+  - Choices to explain at the defense: a malformed archive stops with `malformed archive` and exit 1, and a member that fails also gives exit 1 (nm exits 0 in both cases). Thin archives (`!<thin>`) are refused: their members are outside files.
 
-- [ ] **5. Extended section numbering** (`e_shnum == 0`, `e_shstrndx == SHN_XINDEX`, `st_shndx == SHN_XINDEX`). Today this gives "invalid section header table" (an assembled 70,000-section `.o` lists fine in nm). A symbol with `st_shndx == SHN_XINDEX` currently prints `A`; nm reports a missing `SHT_SYMTAB_SHNDX` section instead. It is rare, but either support it or be ready to explain why not.
+- [x] **5. Extended section numbering.** When `e_shnum` is 0 or `e_shstrndx` is `SHN_XINDEX`, the real values come from section 0. Symbols with `SHN_XINDEX` use the `SHT_SYMTAB_SHNDX` section, and a missing one is reported like nm. A 70,011-section object (64- and 32-bit) gives the same output as nm.
+  - Also like nm: a file without a section table (`e_shoff == 0`) gives `no symbols` (exit 0) for executables and shared objects, and `file format not recognized` for `.o` files.
 
 ## P2 — Cleanup and defense prep
 

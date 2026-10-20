@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/29 14:22:50 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 21:21:59 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 22:12:02 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,12 @@
 
 # define DEFAULT_FILE "a.out"
 
+/* ar archives */
+# define AR_MAGIC "!<arch>\n"
+# define AR_THIN_MAGIC "!<thin>\n"
+# define AR_MAGIC_LEN 8
+# define AR_HEADER_LEN 60
+
 /* e_ident */
 # define EI_CLASS 4
 # define EI_DATA 5
@@ -40,14 +46,17 @@
 # define ELFDATA2LSB 1
 # define ELFDATA2MSB 2
 # define EV_CURRENT 1
+# define ET_REL 1
 
 /* section types, special indexes and flags */
 # define SHT_SYMTAB 2
 # define SHT_STRTAB 3
 # define SHT_NOBITS 8
+# define SHT_SYMTAB_SHNDX 18
 # define SHN_UNDEF 0
 # define SHN_ABS 0xfff1
 # define SHN_COMMON 0xfff2
+# define SHN_XINDEX 0xffff
 # define SHF_WRITE 0x1
 # define SHF_ALLOC 0x2
 # define SHF_EXECINSTR 0x4
@@ -62,6 +71,7 @@
 # define STT_OBJECT 1
 # define STT_SECTION 3
 # define STT_FILE 4
+# define STT_COMMON 5
 # define STT_NUM 7
 # define STT_GNU_IFUNC 10
 
@@ -83,17 +93,20 @@ typedef struct s_file
 typedef struct s_sht_fields
 {
 	size_t		offset;
-	uint16_t	entsize;
-	uint16_t	count;
-	uint16_t	strndx;
+	size_t		entsize;
+	size_t		count;
+	size_t		strndx;
+	uint16_t	type;
 }	t_sht_fields;
 
 typedef struct s_sh_table
 {
 	size_t				size_bytes;
-	uint16_t			entry_size;
-	uint16_t			count;
+	size_t				entry_size;
+	size_t				count;
 	const unsigned char	*base;
+	const char			*names;
+	size_t				names_size;
 }	t_sh_table;
 
 typedef struct s_section_meta
@@ -199,6 +212,8 @@ typedef struct s_symtab_slice
 	size_t				count;
 	const char			*str_base;
 	size_t				str_size;
+	const unsigned char	*shndx_base;
+	size_t				shndx_count;
 	int					present;
 }	t_symtab_slice;
 
@@ -224,9 +239,25 @@ typedef struct s_symbol_view
 {
 	uint32_t		name;
 	uint64_t		value;
+	uint64_t		size;
 	unsigned char	info;
-	uint16_t		shndx;
+	uint32_t		shndx;
 }	t_symbol_view;
+
+typedef struct s_archive
+{
+	const t_file	*file;
+	size_t			offset;
+	const char		*names;
+	size_t			names_size;
+}	t_archive;
+
+typedef struct s_ar_member
+{
+	const char			*header;
+	const unsigned char	*data;
+	size_t				size;
+}	t_ar_member;
 
 /* file.c */
 int				map_file(const char *path, t_file *file);
@@ -255,11 +286,23 @@ size_t			elf_sym_size(const t_elfmeta *meta);
 unsigned char	elf_st_bind(unsigned char info);
 unsigned char	elf_st_type(unsigned char info);
 
+/* archive.c */
+int				is_archive(const t_file *file);
+int				process_archive(const t_file *file, int show_name);
+
+/* archive_name.c */
+int				parse_decimal(const char *field, size_t len, size_t *out);
+int				member_name(const t_archive *ar, const char *header,
+					char **out);
+
 /* elf_header.c */
 int				process_elf(t_file *file, int show_name);
 
 /* section_table.c */
 int				load_section_table(t_nmctx *ctx);
+const char		*section_name(const t_nmctx *ctx, const t_section_meta *meta);
+
+/* symbol_tables.c */
 int				load_symbol_tables(t_nmctx *ctx);
 
 /* sections.c */
@@ -273,7 +316,7 @@ int				populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta,
 /* symbol_read.c */
 int				read_symbol_view(const t_nmctx *ctx, size_t index,
 					t_symbol_view *view);
-int				should_skip_symbol(const t_symbol_view *view, const char *name);
+int				should_skip_symbol(const t_symbol_view *view);
 
 /* symbol_check.c */
 int				check_symbol_kinds(const t_nmctx *ctx);
@@ -286,6 +329,7 @@ char			classify_symbol(const t_nmctx *ctx, const t_symbol_view *sym);
 void			sort_symbols(t_symbol *symbols, size_t count);
 
 /* render.c */
+void			print_file_header(const char *path);
 int				render_symbols(t_nmctx *ctx, int show_name);
 
 /* formatting.c */

@@ -6,13 +6,13 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 19:01:07 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 21:21:59 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 22:12:02 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
 
-static void	print_file_header(const char *path)
+void	print_file_header(const char *path)
 {
 	ft_putchar_fd('\n', STDOUT_FILENO);
 	ft_putstr_fd(path, STDOUT_FILENO);
@@ -21,7 +21,8 @@ static void	print_file_header(const char *path)
 
 /*
 ** Returns 1 if symbol `index` is listed and was stored in `dst`.
-** Symbol 0 is the reserved null entry and is never listed.
+** Symbol 0 is the reserved null entry and is never listed. Like nm, a
+** common symbol shows its size (st_size) instead of its alignment.
 */
 static int	fill_symbol(const t_nmctx *ctx, size_t index, t_symbol *dst)
 {
@@ -31,10 +32,12 @@ static int	fill_symbol(const t_nmctx *ctx, size_t index, t_symbol *dst)
 	if (read_symbol_view(ctx, index, &view) != 0)
 		return (0);
 	name = symbol_name(ctx, view.name);
-	if (should_skip_symbol(&view, name))
+	if (should_skip_symbol(&view))
 		return (0);
 	dst->name = name;
 	dst->value = view.value;
+	if (view.shndx == SHN_COMMON)
+		dst->value = view.size;
 	dst->type_char = classify_symbol(ctx, &view);
 	dst->is_undef = (view.shndx == SHN_UNDEF);
 	return (1);

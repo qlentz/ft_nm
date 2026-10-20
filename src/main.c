@@ -6,7 +6,7 @@
 /*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/29 14:22:50 by qlentz            #+#    #+#             */
-/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*   Updated: 2026/10/20 22:12:02 by qlentz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@ static int	run_file(const char *filename, int show_name)
 
 	if (map_file(filename, &file) != 0)
 		return (1);
-	ret = process_elf(&file, show_name);
+	if (is_archive(&file))
+		ret = process_archive(&file, show_name);
+	else
+		ret = process_elf(&file, show_name);
 	free_file(&file);
 	return (ret);
 }
