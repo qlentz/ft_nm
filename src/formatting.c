@@ -1,4 +1,16 @@
-#include <ft_nm.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   formatting.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/17 18:30:13 by qlentz            #+#    #+#             */
+/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "ft_nm.h"
 
 static void	print_padding(int width)
 {
@@ -24,13 +36,10 @@ static void	print_hex_value(uint64_t value, int width)
 	int	digits;
 
 	digits = hex_digit_count(value);
-	if (digits < width)
+	while (digits < width)
 	{
-		while (digits < width)
-		{
-			ft_putchar_fd('0', STDOUT_FILENO);
-			digits++;
-		}
+		ft_putchar_fd('0', STDOUT_FILENO);
+		digits++;
 	}
 	ft_printhex((unsigned long)value);
 }
@@ -39,10 +48,9 @@ static void	print_symbol_row(const t_nmctx *ctx, const t_symbol *sym)
 {
 	int	width;
 
+	width = 8;
 	if (ctx->meta.is_64)
 		width = 16;
-	else
-		width = 8;
 	if (sym->is_undef)
 		print_padding(width);
 	else
@@ -61,6 +69,6 @@ void	print_symbols(const t_nmctx *ctx, t_symbol *symbols, size_t count)
 	while (i < count)
 	{
 		print_symbol_row(ctx, &symbols[i]);
-		++i;
+		i++;
 	}
 }

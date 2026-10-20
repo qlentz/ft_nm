@@ -1,8 +1,9 @@
 NAME 	= ft_nm
 
-SRCS	= src/main.c src/elf_ident.c src/safety_utils.c src/readers.c \
-		  src/ctx.c src/sections.c src/symbols.c src/formatting.c \
-		  src/errors.c
+SRCS	= src/main.c src/errors.c src/file.c src/readers.c src/safety_utils.c \
+		  src/elf_ident.c src/elf_utils.c src/elf_header.c src/section_table.c \
+		  src/sections.c src/symtab.c src/symbol_read.c src/symbol_type.c \
+		  src/sort.c src/render.c src/formatting.c
 
 OBJS	= $(SRCS:.c=.o)
 

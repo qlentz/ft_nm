@@ -28,8 +28,8 @@ char	*ft_strjoin_gnl(char *s1, char *s2)
 	j = 0;
 	if (!s1)
 	{
-	s1 = (char *)malloc(sizeof(char) * 1);
-	s1[0] = 0;
+		s1 = (char *)malloc(sizeof(char) * 1);
+		s1[0] = 0;
 	}
 	if (!s1 || !s2)
 		return (NULL);

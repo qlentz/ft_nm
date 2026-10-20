@@ -1,39 +1,52 @@
-#include <ft_nm.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   readers.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/16 21:39:12 by qlentz            #+#    #+#             */
+/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-uint16_t r_u16(const void *p, int is_le) {
-    const uint8_t *b = p;
-    uint16_t v = (uint16_t)b[0] | ((uint16_t)b[1] << 8);
-    if (is_le) return v;               // file is little-endian → already correct
-    return (uint16_t)((v >> 8) | (v << 8)); // swap bytes for big-endian
+#include "ft_nm.h"
+
+/*
+** Reads an unsigned integer of `size` bytes stored in the file's byte order.
+** Byte-by-byte access also avoids unaligned reads from the mapped file.
+*/
+static uint64_t	read_uint(const void *p, size_t size, int is_le)
+{
+	const uint8_t	*bytes;
+	uint64_t		value;
+	size_t			i;
+
+	bytes = p;
+	value = 0;
+	i = 0;
+	while (i < size)
+	{
+		if (is_le)
+			value |= (uint64_t)bytes[i] << (8 * i);
+		else
+			value = (value << 8) | bytes[i];
+		i++;
+	}
+	return (value);
 }
 
-uint32_t r_u32(const void *p, int is_le) {
-    const uint8_t *b = p;
-    uint32_t v = (uint32_t)b[0]
-               | ((uint32_t)b[1] << 8)
-               | ((uint32_t)b[2] << 16)
-               | ((uint32_t)b[3] << 24);
-    if (is_le) return v;
-    return ((v & 0x000000FFU) << 24)
-         | ((v & 0x0000FF00U) << 8)
-         | ((v & 0x00FF0000U) >> 8)
-         | ((v & 0xFF000000U) >> 24);
+uint16_t	r_u16(const void *p, int is_le)
+{
+	return ((uint16_t)read_uint(p, 2, is_le));
 }
 
-uint64_t r_u64(const void *p, int is_le) {
-    const uint8_t *b = p;
-    uint64_t v = 0;
-    for (int i = 0; i < 8; ++i)
-        v |= ((uint64_t)b[i]) << (8 * i);
-    if (is_le) return v;
-    // reverse byte order
-    v = ((v & 0x00000000000000FFULL) << 56) |
-        ((v & 0x000000000000FF00ULL) << 40) |
-        ((v & 0x0000000000FF0000ULL) << 24) |
-        ((v & 0x00000000FF000000ULL) << 8)  |
-        ((v & 0x000000FF00000000ULL) >> 8)  |
-        ((v & 0x0000FF0000000000ULL) >> 24) |
-        ((v & 0x00FF000000000000ULL) >> 40) |
-        ((v & 0xFF00000000000000ULL) >> 56);
-    return v;
+uint32_t	r_u32(const void *p, int is_le)
+{
+	return ((uint32_t)read_uint(p, 4, is_le));
+}
+
+uint64_t	r_u64(const void *p, int is_le)
+{
+	return (read_uint(p, 8, is_le));
 }

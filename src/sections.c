@@ -1,11 +1,24 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   sections.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: qlentz <qlentz@student.42lausanne.ch>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/16 23:36:47 by qlentz            #+#    #+#             */
+/*   Updated: 2026/10/20 19:01:07 by qlentz           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_nm.h"
 
-static const unsigned char	*section_header_view(const t_nmctx *ctx, size_t index)
+static const unsigned char	*section_header_view(const t_nmctx *ctx,
+		size_t index)
 {
 	size_t	offset;
 	size_t	stride;
 
-	if (!ctx || !ctx->sht.base || index >= ctx->sht.count)
+	if (!ctx->sht.base || index >= ctx->sht.count)
 		return (NULL);
 	stride = ctx->sht.entry_size;
 	if (mul_overflows_size_t(index, stride, &offset))
@@ -15,91 +28,39 @@ static const unsigned char	*section_header_view(const t_nmctx *ctx, size_t index
 	return (ctx->sht.base + offset);
 }
 
-static void	fill_meta64(const t_nmctx *ctx,
-		const t_elf64shdr *sh, t_section_meta *meta)
+static void	fill_meta64(const t_elf64shdr *sh, int le, t_section_meta *meta)
 {
-	meta->name_index = r_u32(&sh->sh_name, ctx->meta.is_le);
-	meta->type = r_u32(&sh->sh_type, ctx->meta.is_le);
-	meta->offset = (size_t)r_u64(&sh->sh_offset, ctx->meta.is_le);
-	meta->size = (size_t)r_u64(&sh->sh_size, ctx->meta.is_le);
-	meta->link = r_u32(&sh->sh_link, ctx->meta.is_le);
-	meta->entsize = (size_t)r_u64(&sh->sh_entsize, ctx->meta.is_le);
-	meta->flags = r_u64(&sh->sh_flags, ctx->meta.is_le);
+	meta->name_index = r_u32(&sh->sh_name, le);
+	meta->type = r_u32(&sh->sh_type, le);
+	meta->offset = (size_t)r_u64(&sh->sh_offset, le);
+	meta->size = (size_t)r_u64(&sh->sh_size, le);
+	meta->link = r_u32(&sh->sh_link, le);
+	meta->entsize = (size_t)r_u64(&sh->sh_entsize, le);
+	meta->flags = r_u64(&sh->sh_flags, le);
 }
 
-static void	fill_meta32(const t_nmctx *ctx,
-		const t_elf32shdr *sh, t_section_meta *meta)
+static void	fill_meta32(const t_elf32shdr *sh, int le, t_section_meta *meta)
 {
-	meta->name_index = r_u32(&sh->sh_name, ctx->meta.is_le);
-	meta->type = r_u32(&sh->sh_type, ctx->meta.is_le);
-	meta->offset = (size_t)r_u32(&sh->sh_offset, ctx->meta.is_le);
-	meta->size = (size_t)r_u32(&sh->sh_size, ctx->meta.is_le);
-	meta->link = r_u32(&sh->sh_link, ctx->meta.is_le);
-	meta->entsize = (size_t)r_u32(&sh->sh_entsize, ctx->meta.is_le);
-	meta->flags = r_u32(&sh->sh_flags, ctx->meta.is_le);
+	meta->name_index = r_u32(&sh->sh_name, le);
+	meta->type = r_u32(&sh->sh_type, le);
+	meta->offset = (size_t)r_u32(&sh->sh_offset, le);
+	meta->size = (size_t)r_u32(&sh->sh_size, le);
+	meta->link = r_u32(&sh->sh_link, le);
+	meta->entsize = (size_t)r_u32(&sh->sh_entsize, le);
+	meta->flags = r_u32(&sh->sh_flags, le);
 }
 
 int	read_section_meta(const t_nmctx *ctx, size_t index, t_section_meta *meta)
 {
 	const unsigned char	*raw;
 
-	if (!ctx || !meta)
-		return (1);
 	raw = section_header_view(ctx, index);
 	if (!raw)
 		return (1);
 	ft_bzero(meta, sizeof(*meta));
 	if (ctx->meta.is_64)
-		fill_meta64(ctx, (const t_elf64shdr *)raw, meta);
+		fill_meta64((const t_elf64shdr *)raw, ctx->meta.is_le, meta);
 	else
-		fill_meta32(ctx, (const t_elf32shdr *)raw, meta);
-	return (0);
-}
-
-static int	check_symtab_shape(const t_nmctx *ctx, const t_section_meta *meta)
-{
-	size_t	expected;
-
-	expected = ctx->meta.is_64 ? sizeof(t_elf64sym) : sizeof(t_elf32sym);
-	if (meta->entsize != expected)
-		return (nm_error(ctx->file->path, "invalid symbol entry size"));
-	if (meta->size % meta->entsize != 0)
-		return (nm_error(ctx->file->path, "corrupted symbol table size"));
-	return (0);
-}
-
-static int	load_string_table(t_nmctx *ctx, const t_section_meta *meta,
-		const char **base, size_t *size)
-{
-	t_section_meta	str;
-
-	if (meta->link >= ctx->sht.count)
-		return (nm_error(ctx->file->path, "invalid string table link"));
-	if (read_section_meta(ctx, meta->link, &str) != 0)
-		return (nm_error(ctx->file->path, "truncated string table header"));
-	if (str.type != SHT_STRTAB)
-		return (nm_error(ctx->file->path, "symbol table link is not strtab"));
-	*base = (const char *)offptr(ctx->file, str.offset, str.size);
-	if (!*base && str.size)
-		return (nm_error(ctx->file->path, "string table truncated"));
-	*size = str.size;
-	return (0);
-}
-
-int	populate_symtab_slice(t_nmctx *ctx, const t_section_meta *meta,
-		t_symtab_slice *dst)
-{
-	if (!ctx || !meta || !dst)
-		return (1);
-	if (check_symtab_shape(ctx, meta) != 0)
-		return (1);
-	dst->sym_base = offptr(ctx->file, meta->offset, meta->size);
-	if (!dst->sym_base && meta->size)
-		return (nm_error(ctx->file->path, "symbol table truncated"));
-	dst->sym_size = meta->size;
-	dst->entry_size = meta->entsize;
-	dst->count = meta->size / meta->entsize;
-	if (load_string_table(ctx, meta, &dst->str_base, &dst->str_size) != 0)
-		return (1);
+		fill_meta32((const t_elf32shdr *)raw, ctx->meta.is_le, meta);
 	return (0);
 }
