@@ -18,17 +18,22 @@ The code passes `norminette` (src, `ft_nm.h`, libft).
 - A malformed archive, or a member that fails, gives exit 1 (nm exits 0). Thin archives are refused.
 - An unterminated symbol string table: the name is printed as `<corrupt>` with a warning. nm silently cuts it short.
 - A section index past the table prints `A`, like nm (commented in the code).
+- Write errors on stdout (`> /dev/full`) are ignored and give exit 0, like nm.
 - Any `e_machine` is accepted, like nm. `e_ehsize` and `e_type` are not checked, also like nm.
 
 ---
 
 ## P0 — Blocking
 
-- [ ] **1. Performance.**
-  - Done: stable merge sort ([src/sort.c](src/sort.c)). 50,000 symbols: 17.7 s → 0.38 s. libc: 0.30 s → 0.07 s.
-  - Next, output: one `write()` per byte (1.9 million calls for the 50,000-symbol file). That is now most of the time: 0.26 s of the 0.38 s is system time to `/dev/null`, and 1.2 s through a pipe. Buffer the output, for example a 4 KiB buffer flushed when full and at the end of each file. Flush stdout before writing an error so the two streams stay in order. Keep every new file within the Norm.
-  - Optional afterwards: `strcoll` is still 58% of the instructions on the 50,000-symbol file. `strxfrm` keys compared with `strcmp` would cut that, at the cost of memory.
-  - Check each gain with `make test`: the bench rows in `tests/history.csv` keep every run.
+- [x] **1. Performance.** Stable merge sort ([src/sort.c](src/sort.c)) and buffered stdio output ([src/formatting.c](src/formatting.c)). ft_nm is now as fast as nm:
+
+  | Input | Before | After | nm |
+  |---|---|---|---|
+  | 50,000 symbols | 17.7 s | 0.05 s | 0.05 s |
+  | 10,000 symbols | 0.75 s | 0.01 s | 0.02 s |
+  | libc | 0.30 s | 0.01 s | 0.02 s |
+
+  Errors flush stdout first, so the two streams keep nm's order. Write errors are not checked, so the exit code matches nm (0 on `/dev/full`). Every run of `make test` adds its timings to `tests/history.csv`.
 
 ## P2 — Defense prep
 
